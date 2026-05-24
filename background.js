@@ -76,7 +76,7 @@ async function appendRow(token, spreadsheetId, sheetTitle, row) {
   const range = encodeURIComponent(`${sheetTitle}!A:I`);
   const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}` +
               `/values/${range}:append` +
-              `?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+              `?valueInputOption=RAW&insertDataOption=INSERT_ROWS`;
   const res = await fetch(url, {
     method: 'POST',
     headers: {

@@ -80,7 +80,7 @@ async function createSheet(token, name) {
   // 2) Header satırı yaz
   await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${sheet.spreadsheetId}` +
-    `/values/Notlar!A1:I1?valueInputOption=USER_ENTERED`,
+    `/values/Notlar!A1:I1?valueInputOption=RAW`,
     {
       method: 'PUT',
       headers: {
@@ -168,7 +168,11 @@ async function loadSheetList(token) {
       select.appendChild(opt);
     });
   } catch (e) {
-    select.innerHTML = `<option value="">Hata: ${e.message}</option>`;
+    select.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = '';
+    opt.textContent = `Hata: ${e.message}`;
+    select.appendChild(opt);
   }
 }
 
