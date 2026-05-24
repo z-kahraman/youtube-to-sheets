@@ -54,13 +54,15 @@ function scrapeVideoInfo() {
 // ============================================================
 // Not kartı durumu
 // ============================================================
+let cardHost = null;
 let cardEl = null;
 let activeSaveBtn = null;
 let saveTimeoutId = null;
 
-// Kartı kapat — referansı + olası artık düğümleri birlikte temizle
+// Kartı kapat — closed shadow host'u (ve olası artıkları) temizle
 function closeCard() {
-  document.querySelectorAll('#yt2sheets-card').forEach((el) => el.remove());
+  document.querySelectorAll('div[data-yt2sheets-host]').forEach((el) => el.remove());
+  cardHost = null;
   cardEl = null;
   activeSaveBtn = null;
   clearTimeout(saveTimeoutId);
@@ -112,8 +114,12 @@ function openSaveCard() {
   closeCard();
   const info = scrapeVideoInfo();
 
+  // Closed Shadow DOM host → kart, sayfa scriptlerinden ve YouTube CSS'inden izole
+  cardHost = document.createElement('div');
+  cardHost.setAttribute('data-yt2sheets-host', '');
+  const shadow = cardHost.attachShadow({ mode: 'closed' });
+
   const card = document.createElement('div');
-  card.id = 'yt2sheets-card';
   // Inline stiller: YouTube CSS'inden bağımsız, kendi katmanında float eder
   Object.assign(card.style, {
     position: 'fixed', top: '0', left: '0', zIndex: '2147483647',
@@ -187,7 +193,8 @@ function openSaveCard() {
 
   btnRow.append(saveBtn, cancelBtn);
   card.append(header, meta, timeMeta, noteInput, tagField.wrap, btnRow);
-  document.body.appendChild(card);
+  shadow.appendChild(card);
+  document.body.appendChild(cardHost);
   cardEl = card;
 
   positionCard(card);
