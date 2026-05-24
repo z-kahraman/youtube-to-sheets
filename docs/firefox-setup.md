@@ -1,80 +1,79 @@
-# Firefox kurulum ve yayın rehberi
+# Firefox setup & publishing
 
-Firefox, Chrome'un `chrome.identity.getAuthToken`'ını **desteklemez**. Bu yüzden Firefox'ta
-auth, `browser.identity.launchWebAuthFlow` (implicit flow) ile yapılır ve **ayrı bir Google
-OAuth client** (Web application tipi) gerekir. Kod tarafı hazır (`auth.js` tarayıcıya göre
-otomatik dallanır); aşağıdakiler Google Cloud + Firefox tarafında senin yapacakların.
+Firefox does **not** support Chrome's `chrome.identity.getAuthToken`. On Firefox, auth uses
+`browser.identity.launchWebAuthFlow` (implicit flow) and needs a **separate Google OAuth
+client** (Web application type). The code is ready (`auth.js` branches per browser
+automatically); the steps below are what you do in Google Cloud + Firefox.
 
-> Chrome auth'una dokunulmadı — Chrome hâlâ `getAuthToken` ile çalışır.
+> The Chrome auth path is untouched — Chrome still uses `getAuthToken`.
 
 ## 1. Google Cloud: Web OAuth client
-- Mevcut projede (Sheets API enable olmalı) **yeni bir OAuth client** oluştur:
-  type = **Web application**. (Chrome'unki "Chrome Extension" tipiydi; bu ayrı.)
-- OAuth consent screen → scope'lar: `drive.file` + `userinfo.email`; kendi Gmail'ini
-  **test user** olarak ekle (test mode'da).
-- Client ID'yi not et (redirect URI'yi 3. adımda ekleyeceğiz).
+- In your project (Sheets API must be enabled), create a **new OAuth client**:
+  type = **Web application**. (The Chrome one was "Chrome Extension" — this is separate.)
+- OAuth consent screen → scopes: `drive.file` + `userinfo.email`; add your own Gmail as a
+  **test user** (while in testing mode).
+- Note the Client ID (you'll add the redirect URI in step 3).
 
-## 2. Redirect URL'i öğren (sabit)
-`manifest.firefox.json`'da `gecko.id` tanımlı olduğu için `getRedirectURL()` **add-on
-ID'sinden türetilen sabit bir URL** döndürür — yani tek URI tüm kullanıcılarda geçerli
-(MDN). Değerini almak için:
+## 2. Get the redirect URL (stable)
+Because `gecko.id` is set in `manifest.firefox.json`, `getRedirectURL()` returns a **stable
+URL derived from the add-on ID** — so a single URI works for all users (per MDN). To read it:
 
-1. `./build.sh` çalıştır → `dist/yt2sheets-firefox.zip`
+1. Run `./build.sh` → `dist/yt2sheets-firefox.zip`
 2. Firefox → `about:debugging` → "This Firefox" → **Load Temporary Add-on** →
-   `dist/yt2sheets-firefox.zip` (veya açılmış klasördeki `manifest.json`)
-3. Aynı satırda **Inspect** → açılan konsola yaz:
+   `dist/yt2sheets-firefox.zip`
+3. On that row click **Inspect** → in the console run:
    ```js
    browser.identity.getRedirectURL()
    ```
-   Çıktı `https://<hash>.extensions.allizom.org/` biçiminde olur. Bunu kopyala.
+   The output looks like `https://<hash>.extensions.allizom.org/`. Copy it.
 
-## 3. Redirect URI'yi Google'a ekle
-- Google Cloud → 1. adımdaki Web client → **Authorized redirect URIs** →
-  2. adımdaki URL'i ekle → Save.
+## 3. Add the redirect URI in Google
+- Google Cloud → the Web client from step 1 → **Authorized redirect URIs** →
+  add the URL from step 2 → Save.
 
-## 4. Client ID'yi koda gir
-- `auth.js` → `FIREFOX_OAUTH.clientId` alanına Web client ID'sini yaz.
-- `./build.sh` ile yeniden paketle, add-on'u tekrar yükle.
+## 4. Put the Client ID in the code
+- `auth.js` → set `FIREFOX_OAUTH.clientId` to the Web client ID.
+- Rebuild with `./build.sh` and reload the add-on.
 
 ## 5. Test
-- Uzantı ayarları → "Google ile bağlan" → Google consent → token döner.
-- Bir YouTube videosu kaydet → satır sheet'e düşmeli.
+- Extension settings → "Connect with Google" → consent → a token is returned.
+- Save a YouTube video → a row should land in the sheet.
 
-## Bilinen sınırlar / notlar
-- **Implicit flow:** access token ~1 saat geçerli, refresh token yok. Süresi dolunca
-  yeniden bağlanmak (interactive) gerekir. Token `chrome.storage.local`'da expiry ile
-  tutulur. İleride **PKCE auth-code flow** ile yenileme eklenebilir (iyileştirme).
-- **Loopback alternatifi (Firefox 86+):** İstenirse redirect olarak
-  `http://127.0.0.1/mozoauth2/<getRedirectURL alt-domaini>` da kullanılabilir.
-- Implicit flow Google tarafında kısıtlanırsa PKCE'ye geçilir.
+## Known limits / notes
+- **Implicit flow:** the access token is valid ~1 hour, no refresh token. When it expires
+  you reconnect (interactive). The token is stored in `chrome.storage.local` with its expiry.
+  A **PKCE auth-code flow** could be added later for silent refresh (improvement).
+- **Loopback alternative (Firefox 86+):** `http://127.0.0.1/mozoauth2/<getRedirectURL
+  subdomain>` can also be used as the redirect.
+- If Google restricts the implicit flow, switch to PKCE.
 
-## 6. AMO yayını (addons.mozilla.org) — ücretsiz
+## 6. Publishing on AMO (addons.mozilla.org) — free
 
-Paket hazır: `web-ext lint` = 0 hata. (`data_collection_permissions: none` eklendi,
-`strict_min_version: 142` → bu anahtar Firefox 140+/Android 142+ ister.)
+The package is ready: `web-ext lint` reports 0 errors. (`strict_min_version` is 115 for
+broad compatibility; `data_collection_permissions` requires Firefox 140+ and is omitted.)
 
-Adımlar:
-1. [addons.mozilla.org](https://addons.mozilla.org) → giriş (Mozilla hesabı) → **Developer Hub**
-   → **Submit a New Add-on**.
-2. Dağıtım türü:
-   - **"On this site" (listed)** → AMO'da herkese açık listelenir. ← genel kullanım için.
-   - "On your own" → kendin dağıttığın imzalı `.xpi` (listelenmez).
-3. `dist/yt2sheets-firefox.zip` yükle → otomatik doğrulama (aynı web-ext lint).
-4. **Kaynak kodu:** build/minify yok (sadece zip) → kaynak gönderimi gerekmez.
-   Sorarlarsa GitHub linki: https://github.com/z-kahraman/youtube-to-sheets
-5. Listeleme: ad, özet, açıklama (`docs/store-listing.md`), kategori, ekran görüntüleri
-   (`screenshots/`), **gizlilik politikası** (PRIVACY.md içeriği veya host URL'si).
-6. Gönder → inceleme.
-7. Her yeni sürümde `manifest.firefox.json` `version` artır + `./build.sh`.
+Steps:
+1. [addons.mozilla.org](https://addons.mozilla.org) → sign in (Mozilla account) →
+   **Developer Hub** → **Submit a New Add-on**.
+2. Distribution:
+   - **"On this site" (listed)** → publicly listed on AMO. ← for general use.
+   - "On your own" → a signed `.xpi` you distribute yourself (not listed).
+3. Upload `dist/yt2sheets-firefox.zip` → automatic validation (same as web-ext lint).
+4. **Source code:** no build/minification (just a zip) → source submission is not required.
+   If asked, link the repo: https://github.com/z-kahraman/youtube-to-sheets
+5. Listing: name, summary, description (`docs/store-listing.md`), category, screenshots
+   (`screenshots/`), **privacy policy** (PRIVACY content or a hosted URL).
+6. Submit → review.
+7. For each new version bump `version` in `manifest.firefox.json` + run `./build.sh`.
 
-### ⚠️ AMO ≠ herkes bağlanabilir
-AMO listesi herkesin **kurmasını** sağlar; ama **Google'a bağlanmak** için Google
-tarafındaki Web OAuth client'ın "Testing" modundaysa yalnızca **test user'lar**
-bağlanabilir. Tam herkese açık kullanım için Google consent screen'i **"In production"**
-yapıp doğrulatman gerekir (drive.file "sensitive" scope → marka + scope doğrulaması;
-pahalı CASA gerekmez). Kendin + birkaç test kullanıcı için test mode yeterli.
+### ⚠️ Listed on AMO ≠ everyone can connect
+An AMO listing lets anyone **install** the add-on, but to **connect to Google** the Web
+OAuth client must allow the user. While it's in "Testing" mode only **test users** can
+connect. For fully public use, set the consent screen to **"In production"** and complete
+verification (`drive.file` is a sensitive scope → brand + scope verification; the expensive
+CASA assessment is not required). For yourself + a few test users, testing mode is enough.
 
-## Kaynaklar
+## Sources
 - [identity.launchWebAuthFlow — MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/identity/launchWebAuthFlow)
 - [identity API — MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/identity)
 - [Firefox WebExtension and OAuth with Google — Mozilla Discourse](https://discourse.mozilla.org/t/firefox-webextension-and-oauth-browser-identity-getredirecturl-with-google-resolved/42362)

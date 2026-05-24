@@ -43,7 +43,7 @@ your own Google Sheet. Triggered by right-click → "Save to Sheet" on a watch p
 - `icons/` — `icon.svg` source + PNGs
 - `build.sh` — builds the per-browser zips
 - `README.md` / `README.tr.md`, `LICENSE` (MIT), `PRIVACY.md` / `PRIVACY.en.md`
-- `docs/` — release checklist, Firefox setup, publishing, store listing, OAuth-scope plan
+- `docs/` — Firefox setup, publishing, and store-listing guides
 
 ## Conventions
 - No inline scripts (CSP); all JS lives in external files.

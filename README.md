@@ -52,7 +52,7 @@ create your own clients (these are not secrets, but they won't work for you):
 - `options.html/css/js` — setup screen, create/select a sheet
 - `icons/` — logo (svg source + pngs)
 - `build.sh` — builds the chrome/firefox zips
-- `docs/` — release & Firefox setup guides, security plan
+- `docs/` — Firefox setup, publishing, and store-listing guides
 - `PRIVACY.md` — privacy policy
 
 ## Security & privacy

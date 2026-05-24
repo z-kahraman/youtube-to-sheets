@@ -1,58 +1,57 @@
-# Chrome Web Store yayın rehberi
+# Chrome Web Store publishing guide
 
-Herkese açık yayın için adımlar. Mühendislik kısmı (scope daraltma vb.) kodda yapıldı;
-aşağıdakiler büyük ölçüde Google Cloud / Web Store panelinde senin yapacağın işlemler.
+> The primary distribution channel is Firefox/AMO (see `firefox-setup.md`). Chrome Web Store
+> publishing is optional (it has a one-time $5 fee) and is kept here for when/if you want it.
 
-## 0. Ön koşul (tamamlandı)
-- ✅ Scope'lar `drive.file` + `userinfo.email`'e indirildi → restricted scope yok,
-  pahalı CASA güvenlik değerlendirmesi gerekmez.
-- ✅ Güvenlik sertleştirmeleri (#1, #3–#7) yapıldı.
+Steps for public Chrome publishing. The engineering part (scope reduction, etc.) is done in
+code; the rest is mostly work in the Google Cloud / Web Store panels.
 
-## 1. Gizlilik politikası host'la
-- Repo'daki `PRIVACY.md` içeriğini bir yere yayınla (GitHub Pages, kişisel site, Gist).
-- Ortaya çıkan **URL** OAuth doğrulamada ve mağaza listesinde gerekecek.
+## 0. Prerequisites (done)
+- ✅ Scopes reduced to `drive.file` + `userinfo.email` → no restricted scope, so the
+  expensive CASA security assessment is not required.
+- ✅ Security hardening completed.
+
+## 1. Host the privacy policy
+- Publish the contents of `PRIVACY.en.md` somewhere (GitHub Pages, your site, a Gist).
+- The resulting **URL** is needed for OAuth verification and the store listing.
 
 ## 2. OAuth consent screen (Google Cloud Console)
-- https://console.cloud.google.com/auth/branding (doğru proje seçili olsun)
-- App name, support email, **developer contact**, **app logo** (icon128.png), 
-  **application home page**, **privacy policy URL** doldur.
-- Scopes bölümünde yalnızca `drive.file` ve `userinfo.email` görünmeli.
-- Publishing status: **"Testing" → "In production"** yap. Sensitive scope (`drive.file`)
-  kullanıldığı için **doğrulama (verification)** istenecek:
-  - Marka doğrulama + scope gerekçesi.
-  - Genellikle scope kullanımını gösteren **demo video** (uzantıyı kurup sheet'e
-    kaydetmeyi gösteren ekran kaydı) isterler.
+- https://console.cloud.google.com/auth/branding (make sure the right project is selected)
+- Fill in app name, support email, **developer contact**, **app logo** (icon128.png),
+  **application home page**, **privacy policy URL**.
+- The Scopes section should show only `drive.file` and `userinfo.email`.
+- Publishing status: **"Testing" → "In production"**. Because a sensitive scope
+  (`drive.file`) is used, **verification** will be requested:
+  - Brand verification + scope justification.
+  - They usually want a **demo video** showing the scope in use (install + save to sheet).
 
 ## 3. Extension ID / OAuth client (chicken-and-egg)
-- Web Store'a ilk yüklemede uzantıya kalıcı bir **ID** atanır.
-- Yerel "unpacked" ID ile yayınlanan ID'yi eşitlemek için: store item oluştuktan sonra
-  paketin **public key**'ini al, `manifest.json`'a `"key": "<public_key>"` ekle.
-- OAuth client (type: Chrome Extension) → **Application ID** alanını yayınlanan ID ile
-  güncelle. Aksi halde yayınlanan sürümde `chrome.identity` token alamaz.
-- Sıra önerisi: önce Web Store'a draft yükle → ID'yi öğren → OAuth client'ı güncelle →
-  (gerekirse) `key`'i manifest'e ekleyip tekrar paketle.
+- The first Web Store upload assigns a permanent **ID** to the extension.
+- To make the local "unpacked" ID match the published ID: after the store item exists, take
+  the package's **public key** and add `"key": "<public_key>"` to `manifest.json`.
+- OAuth client (type: Chrome Extension) → update **Application ID** to the published ID,
+  otherwise `chrome.identity` can't get a token in the published version.
+- Suggested order: upload a draft → learn the ID → update the OAuth client → (if needed) add
+  `key` to the manifest and repackage.
 
-## 4. Web Store geliştirici hesabı + listeleme
-- https://chrome.google.com/webstore/devconsole — tek seferlik **$5** kayıt.
-- `docs/store-listing.md` içeriğini kullan (açıklama, kategori, permission justification).
-- Ekran görüntüleri (1280x800 veya 640x400) ekle — en az 1 tane.
-- İkon (128px) hazır.
-- `.zip` paketini yükle (bkz. `docs/publishing.md` → "Paketleme" ya da repo kökünde
-  oluşturulan zip).
+## 4. Web Store developer account + listing
+- https://chrome.google.com/webstore/devconsole — one-time **$5** registration.
+- Use `docs/store-listing.md` (description, category, permission justifications).
+- Add screenshots (1280x800 or 640x400) — at least one.
+- Icon (128px) is ready.
+- Upload the chrome zip (`./build.sh` → `dist/yt2sheets-chrome.zip`).
 
-## 5. Paketleme
-Yüklenecek zip yalnızca runtime dosyalarını içermeli (docs, .git, plan dosyaları HARİÇ):
+## 5. Packaging
+Use the build script (it includes only runtime files, excludes docs/.git/etc.):
 ```
-zip -r ../yt2sheets.zip manifest.json background.js content.js \
-  options.html options.css options.js icons/icon16.png icons/icon32.png \
-  icons/icon48.png icons/icon128.png
+./build.sh   # → dist/yt2sheets-chrome.zip, dist/yt2sheets-firefox.zip
 ```
 
-## 6. İnceleme
-- Web Store incelemesi (politika uyumu) + OAuth doğrulama paralel ilerler.
-- Onaylanınca herkese açık olur. Onaya kadar yalnızca test user'lar kurabilir.
+## 6. Review
+- Web Store review (policy compliance) + OAuth verification proceed in parallel.
+- Once approved it's public. Until then only test users can install/connect.
 
-## Notlar
-- `version` (manifest) her yeni yüklemede artırılmalı.
-- Scope değiştiği için mevcut token'lar geçersiz: test ederken
-  https://myaccount.google.com/permissions üzerinden eski izni kaldırıp yeniden bağlan.
+## Notes
+- Bump `version` (manifest) on every new upload.
+- Changing scopes invalidates existing tokens: while testing, revoke at
+  https://myaccount.google.com/permissions and reconnect.

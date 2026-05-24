@@ -1,2 +1,9 @@
 # Build çıktıları (Web Store paketi)
 dist/
+
+# Kişisel Claude Code yapılandırması (public repoda tutulmaz)
+.claude/
+
+# İçsel çalışma / planlama notları (yerelde tutulur)
+docs/RELEASE-CHECKLIST.md
+docs/security-2-oauth-scope-plan.md

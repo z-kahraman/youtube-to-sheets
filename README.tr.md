@@ -53,7 +53,7 @@ client'larını oluşturman gerekir (gizli anahtar değildir ama sana çalışma
 - `options.html/css/js` — kurulum ekranı, sheet oluştur/seç
 - `icons/` — logo (svg kaynağı + png'ler)
 - `build.sh` — chrome/firefox zip üretimi
-- `docs/` — yayın & Firefox kurulum rehberleri, güvenlik planı
+- `docs/` — Firefox kurulum, yayın ve mağaza-listesi rehberleri
 - `PRIVACY.md` — gizlilik politikası
 
 ## Güvenlik & gizlilik
