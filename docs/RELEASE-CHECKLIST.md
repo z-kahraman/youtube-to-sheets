@@ -39,42 +39,36 @@ Son güncelleme: 2026-05-24.
 
 ---
 
-## ⏳ Yapılacaklar (yayın süreci) — adım adım
+## 🔁 Strateji (2026-05-24 güncellemesi)
+- **Chrome:** YAYINLANMAYACAK — yalnızca lokal kullanım ($5 Web Store ücreti ertelendi).
+  `docs/publishing.md` ve `docs/store-listing.md` ileride lazım olursa duruyor.
+- **Hedef yayın:** Firefox (AMO, ücretsiz).
+- **Açık kaynak:** GitHub (MIT).
+- Chrome auth'una (getAuthToken) dokunulmayacak; Firefox için ayrı auth eklenecek.
 
-> Çoğu Google Cloud / Web Store panelinde SENİN yapacağın işlem. Detay: `publishing.md`.
+## ⏳ Yapılacaklar — adım adım
 
-### 1. Yerel test (scope değişimi sonrası) — ÖNCE BU
-- [ ] https://myaccount.google.com/permissions → eski izni kaldır
-- [ ] `chrome://extensions` → reload, YouTube watch → F5
-- [ ] Ayarlardan yeniden bağlan (consent'te yalnız Drive-dosya + email görünmeli)
-- [ ] **Yeni sheet oluştur** → bir video kaydet → satır düşüyor mu?
-- [ ] Not (`=1+1`) düz metin olarak yazılıyor mu? (formül değil)
-- Not: eski seçili HARİCİ sheet artık yazılamaz → yeni oluşturmak gerekir.
+### A. GitHub açık kaynak
+- [x] LICENSE (MIT) + README
+- [ ] GitHub'da public repo aç + push (gh yok → manuel komutlar verilecek)
 
-### 2. Gizlilik politikası
-- [ ] PRIVACY.md içinde `<destek-email>` (ve varsa ana sayfa) doldur
-- [ ] Bir yere host et (GitHub Pages / Gist / kişisel site) → URL'yi not et
+### B. Firefox portu (kod — ben yapıyorum)
+- [ ] Auth soyutlama: Chrome getAuthToken korunur, Firefox için launchWebAuthFlow eklenir
+- [ ] `manifest.firefox.json` (background.scripts, gecko.id, oauth2 yok)
+- [ ] Build script (chrome/firefox ayrı zip)
+- [ ] `docs/firefox-setup.md`
 
-### 3. OAuth consent screen (Google Cloud Console)
-- [ ] auth/branding: app adı, logo (icon128), destek + developer email, privacy URL
-- [ ] Scope listesi yalnız `drive.file` + `userinfo.email` olmalı
-- [ ] Publishing status: "Testing" → **"In production"**
-- [ ] Doğrulama başvurusu (demo video hazırla: kurulum + sheet'e kaydetme)
+### C. Firefox yayın (senin yapacakların — rehber: docs/firefox-setup.md)
+- [ ] Google Cloud'da **Web application** OAuth client oluştur
+- [ ] Firefox'ta uzantıyı yükle → `browser.identity.getRedirectURL()` değerini al →
+      Google Cloud'da "Authorized redirect URI" olarak ekle
+- [ ] AMO geliştirici hesabı (ücretsiz) → Firefox zip'ini yükle → incele
 
-### 4. Chrome Web Store
-- [ ] Geliştirici hesabı aç ($5 tek seferlik)
-- [ ] dist/*.zip yükle (draft) → atanan **extension ID**'yi not et
-- [ ] OAuth client (Chrome Extension) → Application ID'yi bu ID ile güncelle
-- [ ] (Gerekirse) store public key'i manifest'e `"key"` olarak ekle, yeniden paketle
-
-### 5. Mağaza listesi + inceleme
-- [ ] docs/store-listing.md'den açıklama/kategori/izin gerekçelerini gir
-- [ ] En az 1 ekran görüntüsü ekle (1280x800)
-- [ ] İncelemeye gönder (Web Store incelemesi + OAuth doğrulama paralel ilerler)
-
-### Her yeni yüklemede
-- [ ] manifest `version` artır
-- [ ] dist zip'i yeniden oluştur (bkz. publishing.md → Paketleme)
+### D. Lokal test (Chrome — scope değişimi sonrası)
+- [ ] myaccount.google.com/permissions → eski izni kaldır
+- [ ] reload + F5 → yeniden bağlan → yeni sheet oluştur → kaydet
+- [ ] Not `=1+1` düz metin mi? (formül değil)
+- Not: eski HARİCİ sheet artık yazılamaz → yeni oluştur.
 
 ---
 
