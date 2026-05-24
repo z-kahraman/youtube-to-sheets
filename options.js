@@ -1,27 +1,5 @@
-// ============================================================
-// Helper: OAuth token al
-// ============================================================
-function getToken(interactive = true) {
-  return new Promise((resolve, reject) => {
-    chrome.identity.getAuthToken({ interactive }, (token) => {
-      if (chrome.runtime.lastError || !token) {
-        reject(new Error(chrome.runtime.lastError?.message || 'Token alınamadı'));
-      } else {
-        resolve(token);
-      }
-    });
-  });
-}
-
-// Token cache'i temizle ve Google tarafında revoke et
-async function revokeToken(token) {
-  return new Promise((resolve) => {
-    chrome.identity.removeCachedAuthToken({ token }, () => {
-      fetch(`https://oauth2.googleapis.com/revoke?token=${token}`, { method: 'POST' })
-        .finally(resolve);
-    });
-  });
-}
+// getToken() ve revokeToken() ortak auth katmanından gelir (auth.js,
+// options.html'de options.js'ten önce yüklenir)
 
 // ============================================================
 // Helper: Toast bildirim

@@ -1,3 +1,9 @@
+// Chrome service worker'da ortak auth katmanını yükle.
+// (Firefox'ta background.scripts auth.js'i zaten ayrı yükler; orada importScripts yok.)
+if (typeof importScripts === 'function') {
+  importScripts('auth.js');
+}
+
 // ============================================================
 // Kurulum: options'ı aç + sağ tık menüsünü oluştur
 // ============================================================
@@ -40,20 +46,7 @@ chrome.runtime.onMessage.addListener((msg, sender) => {
   }
 });
 
-// ============================================================
-// Helper: OAuth token (options'ta zaten onaylandığı için interactive=false yeter)
-// ============================================================
-function getToken(interactive = false) {
-  return new Promise((resolve, reject) => {
-    chrome.identity.getAuthToken({ interactive }, (token) => {
-      if (chrome.runtime.lastError || !token) {
-        reject(new Error(chrome.runtime.lastError?.message || 'Token alınamadı'));
-      } else {
-        resolve(token);
-      }
-    });
-  });
-}
+// getToken() ortak auth katmanından gelir (auth.js)
 
 async function getSelectedSheet() {
   const { selectedSheet } = await chrome.storage.sync.get('selectedSheet');

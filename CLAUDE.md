@@ -6,19 +6,32 @@ seçili Google Sheet'e satır olarak kaydet (tarih, başlık, kanal, URL,
 izleme süresi, not, etiket).
 
 ## Stack
-- Manifest V3, vanilla JS (framework yok)
+- Manifest V3, vanilla JS (framework yok), cross-browser (Chrome + Firefox)
 - Google Sheets API v4 (Drive listeleme KALDIRILDI — bkz. scope daraltma)
-- OAuth 2.0 via chrome.identity — scope: drive.file + userinfo.email
+- OAuth 2.0 — scope: drive.file + userinfo.email
+  - Chrome: chrome.identity.getAuthToken
+  - Firefox: browser.identity.launchWebAuthFlow (implicit flow, ayrı Web client)
 - chrome.storage.sync: selectedSheet + createdSheets (uygulama-sahipli liste)
 
+## Cross-browser
+- auth.js: tarayıcıya göre dallanan ortak OAuth katmanı (Chrome dalı = eski davranış).
+  background.js (Chrome'da importScripts, Firefox'ta background.scripts) ve options.html
+  bunu yükler.
+- manifest.json = Chrome (service_worker + oauth2). manifest.firefox.json = Firefox
+  (background.scripts + gecko.id, oauth2 YOK).
+- ./build.sh → dist/yt2sheets-chrome.zip + dist/yt2sheets-firefox.zip
+- Firefox auth kurulumu: docs/firefox-setup.md (Web client + redirect URL).
+
 ## Dosya yapısı
-- manifest.json — extension config + OAuth scopes
-- background.js — service worker, context menu, OAuth, Sheets append
-- content.js — YouTube DOM scrape + overlay not kartı UI + etiket chip'leri
+- manifest.json / manifest.firefox.json — Chrome / Firefox config
+- auth.js — ortak OAuth katmanı (getToken/revokeToken, tarayıcı-bağımsız)
+- background.js — service worker/event page: context menu, Sheets append
+- content.js — YouTube DOM scrape + overlay not kartı (Shadow DOM) + etiket chip'leri
 - options.html/css/js — setup ekranı, sheet oluştur/seç (uygulama-sahipli)
-- icons/ — icon.svg (kaynak) + icon16/32/48/128.png (manifest icons + action)
-- PRIVACY.md — gizlilik politikası (host'lanacak)
-- docs/ — publishing.md (yayın rehberi), store-listing.md, security-2-oauth-scope-plan.md
+- icons/ — icon.svg (kaynak) + icon16/32/48/128.png
+- build.sh — chrome/firefox zip üretimi
+- README.md, LICENSE (MIT), PRIVACY.md
+- docs/ — RELEASE-CHECKLIST, firefox-setup, publishing, store-listing, security-2-oauth-scope-plan
 
 ## Konvansiyonlar
 - Inline script YOK (CSP), tüm JS dış dosyada
