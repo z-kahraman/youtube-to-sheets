@@ -46,21 +46,6 @@ async function getUserEmail(token) {
   return data.email;
 }
 
-async function listSheets(token) {
-  const query = encodeURIComponent(
-    "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false"
-  );
-  const url = `https://www.googleapis.com/drive/v3/files` +
-              `?q=${query}` +
-              `&fields=files(id,name,modifiedTime)` +
-              `&orderBy=modifiedTime desc` +
-              `&pageSize=50`;
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error(`Drive listesi alınamadı: ${res.status}`);
-  const data = await res.json();
-  return data.files || [];
-}
-
 async function createSheet(token, name) {
   // 1) Sheet'i oluştur
   const createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
@@ -109,6 +94,21 @@ const getSelectedSheet = async () => {
 
 const clearSelectedSheet = () => chrome.storage.sync.remove('selectedSheet');
 
+// drive.file scope'u yalnızca uygulamanın oluşturduğu dosyalara erişir;
+// bu yüzden "tüm sheet'leri listele" yerine kendi oluşturduklarımızı tutarız.
+const getCreatedSheets = async () => {
+  const { createdSheets } = await chrome.storage.sync.get('createdSheets');
+  return createdSheets || [];
+};
+
+const addCreatedSheet = async (id, name) => {
+  const list = await getCreatedSheets();
+  if (!list.some((s) => s.id === id)) {
+    list.unshift({ id, name });
+    await chrome.storage.sync.set({ createdSheets: list });
+  }
+};
+
 // ============================================================
 // UI render
 // ============================================================
@@ -147,33 +147,29 @@ async function refreshUI() {
   } else {
     hide('current-sheet');
     show('sheet-picker');
-    await loadSheetList(token);
+    await loadSheetList();
   }
 }
 
-async function loadSheetList(token) {
+// Uygulamanın daha önce oluşturduğu sheet'leri listele (storage'dan)
+async function loadSheetList() {
   const select = document.getElementById('sheet-list');
-  select.innerHTML = '<option value="">— Yükleniyor —</option>';
-  try {
-    const sheets = await listSheets(token);
-    if (sheets.length === 0) {
-      select.innerHTML = '<option value="">Hiç sheet bulunamadı</option>';
-      return;
-    }
-    select.innerHTML = '<option value="">— Bir sheet seç —</option>';
-    sheets.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = s.name;
-      select.appendChild(opt);
-    });
-  } catch (e) {
-    select.innerHTML = '';
+  select.innerHTML = '';
+
+  const sheets = await getCreatedSheets();
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = sheets.length
+    ? '— Bir sheet seç —'
+    : 'Henüz oluşturulmuş sheet yok — aşağıdan oluştur';
+  select.appendChild(placeholder);
+
+  sheets.forEach((s) => {
     const opt = document.createElement('option');
-    opt.value = '';
-    opt.textContent = `Hata: ${e.message}`;
+    opt.value = s.id;
+    opt.textContent = s.name;
     select.appendChild(opt);
-  }
+  });
 }
 
 // ============================================================
@@ -223,6 +219,7 @@ document.getElementById('create-sheet-btn').addEventListener('click', async () =
     toast('Sheet oluşturuluyor...');
     const token = await getToken(true);
     const sheet = await createSheet(token, name);
+    await addCreatedSheet(sheet.id, sheet.name);
     await setSelectedSheet(sheet.id, sheet.name);
     toast('Sheet oluşturuldu ✓');
     await refreshUI();
