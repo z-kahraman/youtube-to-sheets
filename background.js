@@ -1,7 +1,20 @@
-// Chrome service worker'da ortak auth katmanını yükle.
-// (Firefox'ta background.scripts auth.js'i zaten ayrı yükler; orada importScripts yok.)
+// Chrome service worker'da ortak katmanları yükle.
+// (Firefox'ta background.scripts bunları zaten ayrı yükler; orada importScripts yok.)
 if (typeof importScripts === 'function') {
-  importScripts('auth.js');
+  importScripts('auth.js', 'strings.js');
+}
+
+// Sağ tık menüsünü güncel dille (yeniden) oluştur
+async function ensureMenu() {
+  await loadLang();
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: 'save-to-sheet',
+      title: t('saveToSheet'),
+      contexts: ['page'],
+      documentUrlPatterns: ['https://www.youtube.com/watch*']
+    });
+  });
 }
 
 // ============================================================
@@ -9,12 +22,12 @@ if (typeof importScripts === 'function') {
 // ============================================================
 chrome.runtime.onInstalled.addListener(() => {
   chrome.runtime.openOptionsPage();
-  chrome.contextMenus.create({
-    id: 'save-to-sheet',
-    title: "Sheet'e kaydet",
-    contexts: ['page'],
-    documentUrlPatterns: ['https://www.youtube.com/watch*']
-  });
+  ensureMenu();
+});
+
+// Dil değişince sağ tık menüsünü güncelle
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync' && changes.lang) ensureMenu();
 });
 
 // Extension ikonuna tıklanınca options'ı aç
@@ -84,15 +97,16 @@ async function appendRow(token, spreadsheetId, sheetTitle, row) {
 
 // Kaydetme akışı: token → seçili sheet → satırı ekle
 async function handleSaveRow(data) {
+  await loadLang();
   const selected = await getSelectedSheet();
-  if (!selected) throw new Error('Önce ayarlardan bir sheet seç');
+  if (!selected) throw new Error(t('noSheet'));
 
   const token = await getToken(false);
   const sheetTitle = await getFirstSheetTitle(token, selected.id);
 
   // Sütun sırası: Tarih, Başlık, Kanal, Kanal Linki, URL, İzleme Süresi, Toplam Süre, Not, Etiketler
   const row = [
-    new Date().toLocaleString('tr-TR'),
+    new Date().toLocaleString(t('dateLocale')),
     data.title || '',
     data.channel || '',
     data.channelUrl || '',

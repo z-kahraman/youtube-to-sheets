@@ -11,8 +11,8 @@ analitik veya reklam **yok**. Uzantı yalnızca kendi oluşturduğu Sheets dosya
 (`drive.file`).
 
 ## Ekran görüntüleri
-![YouTube sayfasında not kartı](screenshots/note-card.png)
-![Kurulum / ayarlar sayfası](screenshots/options.png)
+![YouTube sayfasında not kartı](screenshots/note-card-tr.png)
+![Kurulum / ayarlar sayfası](screenshots/options-tr.png)
 
 ## Özellikler
 - YouTube watch sayfasında **sağ tık → "Sheet'e kaydet"**

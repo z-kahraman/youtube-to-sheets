@@ -1,16 +1,16 @@
-// getToken() ve revokeToken() ortak auth katmanından gelir (auth.js,
-// options.html'de options.js'ten önce yüklenir)
+// getToken()/revokeToken() → auth.js; t()/loadLang()/setLang() → strings.js
+// (options.html'de options.js'ten önce yüklenirler)
 
 // ============================================================
 // Helper: Toast bildirim
 // ============================================================
 function toast(message, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = message;
-  t.className = type;
-  t.classList.remove('hidden');
+  const el = document.getElementById('toast');
+  el.textContent = message;
+  el.className = type;
+  el.classList.remove('hidden');
   clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(() => t.classList.add('hidden'), 3000);
+  window.__toastTimer = setTimeout(() => el.classList.add('hidden'), 3000);
 }
 
 // ============================================================
@@ -25,7 +25,9 @@ async function getUserEmail(token) {
 }
 
 async function createSheet(token, name) {
-  // 1) Sheet'i oluştur
+  const tabName = t('tabName');
+
+  // 1) Sheet'i oluştur (sekme adı seçili dile göre)
   const createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
     method: 'POST',
     headers: {
@@ -34,25 +36,24 @@ async function createSheet(token, name) {
     },
     body: JSON.stringify({
       properties: { title: name },
-      sheets: [{ properties: { title: 'Notlar' } }]
+      sheets: [{ properties: { title: tabName } }]
     })
   });
   if (!createRes.ok) throw new Error(`Sheet oluşturulamadı: ${createRes.status}`);
   const sheet = await createRes.json();
 
-  // 2) Header satırı yaz
+  // 2) Header satırını seçili dile göre yaz
+  const range = `${encodeURIComponent(tabName)}!A1:I1`;
   await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${sheet.spreadsheetId}` +
-    `/values/Notlar!A1:I1?valueInputOption=RAW`,
+    `/values/${range}?valueInputOption=RAW`,
     {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        values: [['Tarih', 'Başlık', 'Kanal', 'Kanal Linki', 'URL', 'İzleme Süresi', 'Toplam Süre', 'Not', 'Etiketler']]
-      })
+      body: JSON.stringify({ values: [t('headers')] })
     }
   );
 
@@ -93,6 +94,16 @@ const addCreatedSheet = async (id, name) => {
 const show = (id) => document.getElementById(id).classList.remove('hidden');
 const hide = (id) => document.getElementById(id).classList.add('hidden');
 
+// Sabit metinleri seçili dile göre uygula
+function applyI18n() {
+  document.title = t('optionsTitle');
+  document.documentElement.lang = currentLang();
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    el.textContent = t(el.getAttribute('data-i18n'));
+  });
+  document.getElementById('new-sheet-name').placeholder = t('defaultSheetName');
+}
+
 async function refreshUI() {
   // Bağlı mı? (interactive=false → popup açmadan dene)
   let token = null;
@@ -113,7 +124,7 @@ async function refreshUI() {
   try {
     document.getElementById('user-email').textContent = await getUserEmail(token);
   } catch {
-    document.getElementById('user-email').textContent = '(email alınamadı)';
+    document.getElementById('user-email').textContent = t('emailFail');
   }
 
   // Seçili sheet var mı?
@@ -137,9 +148,7 @@ async function loadSheetList() {
   const sheets = await getCreatedSheets();
   const placeholder = document.createElement('option');
   placeholder.value = '';
-  placeholder.textContent = sheets.length
-    ? '— Bir sheet seç —'
-    : 'Henüz oluşturulmuş sheet yok — aşağıdan oluştur';
+  placeholder.textContent = sheets.length ? t('selectSheet') : t('noSheetsYet');
   select.appendChild(placeholder);
 
   sheets.forEach((s) => {
@@ -153,13 +162,19 @@ async function loadSheetList() {
 // ============================================================
 // Event listeners
 // ============================================================
+document.getElementById('lang-select').addEventListener('change', async (e) => {
+  await setLang(e.target.value);
+  applyI18n();
+  await refreshUI();
+});
+
 document.getElementById('connect-btn').addEventListener('click', async () => {
   try {
     await getToken(true);
-    toast('Bağlandı ✓');
+    toast(t('connected'));
     await refreshUI();
   } catch (e) {
-    toast('Bağlanma hatası: ' + e.message, 'error');
+    toast(t('connectError') + e.message, 'error');
   }
 });
 
@@ -169,7 +184,7 @@ document.getElementById('disconnect-btn').addEventListener('click', async () => 
     await revokeToken(token);
   } catch {}
   await clearSelectedSheet();
-  toast('Bağlantı kesildi');
+  toast(t('disconnected'));
   await refreshUI();
 });
 
@@ -177,12 +192,12 @@ document.getElementById('use-selected-btn').addEventListener('click', async () =
   const select = document.getElementById('sheet-list');
   const id = select.value;
   if (!id) {
-    toast('Önce bir sheet seç', 'error');
+    toast(t('selectFirst'), 'error');
     return;
   }
   const name = select.options[select.selectedIndex].textContent;
   await setSelectedSheet(id, name);
-  toast(`Seçildi: ${name}`);
+  toast(t('selected') + name);
   await refreshUI();
 });
 
@@ -192,19 +207,28 @@ document.getElementById('change-sheet-btn').addEventListener('click', async () =
 });
 
 document.getElementById('create-sheet-btn').addEventListener('click', async () => {
-  const name = document.getElementById('new-sheet-name').value.trim() || 'YouTube İzleme Notları';
+  const name = document.getElementById('new-sheet-name').value.trim() || t('defaultSheetName');
   try {
-    toast('Sheet oluşturuluyor...');
+    toast(t('creatingSheet'));
     const token = await getToken(true);
     const sheet = await createSheet(token, name);
     await addCreatedSheet(sheet.id, sheet.name);
     await setSelectedSheet(sheet.id, sheet.name);
-    toast('Sheet oluşturuldu ✓');
+    toast(t('sheetCreated'));
     await refreshUI();
   } catch (e) {
-    toast('Oluşturma hatası: ' + e.message, 'error');
+    toast(t('createError') + e.message, 'error');
   }
 });
 
-// İlk yükleme
-refreshUI();
+// ============================================================
+// İlk yükleme: dili yükle → metinleri uygula → UI
+// ============================================================
+async function init() {
+  await loadLang();
+  document.getElementById('lang-select').value = currentLang();
+  applyI18n();
+  await refreshUI();
+}
+
+init();

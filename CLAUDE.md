@@ -25,6 +25,9 @@ izleme süresi, not, etiket).
 ## Dosya yapısı
 - manifest.json / manifest.firefox.json — Chrome / Firefox config
 - auth.js — ortak OAuth katmanı (getToken/revokeToken, tarayıcı-bağımsız)
+- strings.js — i18n: TR/EN sözlük + t()/loadLang()/setLang(). Varsayılan tarayıcı dili,
+  ayarlardan değiştirilebilir (storage.sync.lang). UI + context menu + yeni sheet adı/header
+  + tarih locale dile bağlı. content_scripts ve background'a strings.js eklendi.
 - background.js — service worker/event page: context menu, Sheets append
 - content.js — YouTube DOM scrape + overlay not kartı (Shadow DOM) + etiket chip'leri
 - options.html/css/js — setup ekranı, sheet oluştur/seç (uygulama-sahipli)

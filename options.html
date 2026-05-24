@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="utf-8">
-  <title>YouTube to Sheets — Ayarlar</title>
+  <title>YouTube to Sheets</title>
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
@@ -10,48 +10,55 @@
     <div class="logo" aria-hidden="true">▶</div>
     <div>
       <h1>YouTube to Sheets</h1>
-      <p class="subtitle">Videolarını Google Sheets'e kaydet</p>
+      <p class="subtitle" data-i18n="subtitle"></p>
     </div>
   </header>
 
+  <div class="lang-row">
+    <label class="field-label" for="lang-select">Dil / Language</label>
+    <select id="lang-select">
+      <option value="tr">Türkçe</option>
+      <option value="en">English</option>
+    </select>
+  </div>
+
   <div id="not-connected" class="card hidden">
-    <p class="muted">Henüz Google hesabı bağlı değil.</p>
-    <button id="connect-btn">Google ile bağlan</button>
+    <p class="muted" data-i18n="notConnected"></p>
+    <button id="connect-btn" data-i18n="connect"></button>
   </div>
 
   <div id="connected" class="card hidden">
     <div class="status">
       <span class="dot"></span>
-      <span class="status-label">Hesap bağlı</span>
+      <span class="status-label" data-i18n="accountConnected"></span>
     </div>
     <p class="email" id="user-email">...</p>
-    <button id="disconnect-btn" class="secondary">Bağlantıyı kes</button>
+    <button id="disconnect-btn" class="secondary" data-i18n="disconnect"></button>
   </div>
 
   <div id="sheet-section" class="card hidden">
-    <h2><span class="card-icon" aria-hidden="true">📄</span> Hedef Sheet</h2>
+    <h2><span class="card-icon" aria-hidden="true">📄</span> <span data-i18n="targetSheet"></span></h2>
 
     <div id="current-sheet" class="hidden">
-      <p class="muted">Şu an seçili</p>
+      <p class="muted" data-i18n="currentlySelected"></p>
       <p class="sheet-name" id="selected-sheet-name"></p>
-      <button id="change-sheet-btn" class="secondary">Değiştir</button>
+      <button id="change-sheet-btn" class="secondary" data-i18n="change"></button>
     </div>
 
     <div id="sheet-picker" class="hidden">
-      <label class="field-label">Oluşturduğun sheet'lerden seç</label>
-      <select id="sheet-list">
-        <option value="">— Yükleniyor —</option>
-      </select>
-      <button id="use-selected-btn">Bu sheet'i kullan</button>
+      <label class="field-label" data-i18n="pickCreated"></label>
+      <select id="sheet-list"></select>
+      <button id="use-selected-btn" data-i18n="useThis"></button>
       <hr>
-      <label class="field-label">Veya yeni bir tane oluştur</label>
-      <input type="text" id="new-sheet-name" value="YouTube İzleme Notları">
-      <button id="create-sheet-btn">Yeni sheet oluştur</button>
+      <label class="field-label" data-i18n="orCreateNew"></label>
+      <input type="text" id="new-sheet-name">
+      <button id="create-sheet-btn" data-i18n="createNew"></button>
     </div>
   </div>
 
   <div id="toast" class="hidden"></div>
 
+  <script src="strings.js"></script>
   <script src="auth.js"></script>
   <script src="options.js"></script>
 </body>

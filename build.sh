@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 mkdir -p dist
 
 # Pakete girecek ortak runtime dosyaları (docs/svg/.git HARİÇ)
-SHARED=(auth.js background.js content.js options.html options.css options.js)
+SHARED=(auth.js strings.js background.js content.js options.html options.css options.js)
 PNGS=(icons/icon16.png icons/icon32.png icons/icon48.png icons/icon128.png)
 
 build() {

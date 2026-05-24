@@ -73,7 +73,7 @@ function handleSaveResult(msg) {
   clearTimeout(saveTimeoutId);
   if (!cardEl) return; // kullanıcı kartı kapatmış
   if (msg.ok) showSuccessInCard();
-  else showErrorInCard(msg.error || 'Bilinmeyen hata');
+  else showErrorInCard(msg.error || t('unknownError'));
 }
 
 // Kartın yerinde "✓ Kaydedildi" göster, sonra kendiliğinden kapan
@@ -81,7 +81,7 @@ function showSuccessInCard() {
   if (!cardEl) return;
   cardEl.textContent = '';
   const ok = document.createElement('div');
-  ok.textContent = '✓ Kaydedildi';
+  ok.textContent = t('saved');
   Object.assign(ok.style, {
     color: '#2ecc71', fontWeight: '700', fontSize: '16px',
     textAlign: 'center', padding: '10px 0'
@@ -104,13 +104,14 @@ function showErrorInCard(message) {
     Object.assign(err.style, { color: '#e74c3c', fontSize: '12px', marginTop: '8px' });
     cardEl.appendChild(err);
   }
-  err.textContent = 'Hata: ' + message;
+  err.textContent = t('errorPrefix') + message;
 }
 
 // ============================================================
 // Not kartını aç (sağ tık konumunda)
 // ============================================================
-function openSaveCard() {
+async function openSaveCard() {
+  await loadLang();
   closeCard();
   const info = scrapeVideoInfo();
 
@@ -139,7 +140,7 @@ function openSaveCard() {
 
   // Başlık satırı
   const header = document.createElement('div');
-  header.textContent = "📋 Sheet'e kaydet";
+  header.textContent = t('cardTitle');
   Object.assign(header.style, { fontWeight: '700', fontSize: '15px', marginBottom: '10px' });
 
   // Çekilen bilgi (salt okunur özet)
@@ -151,12 +152,12 @@ function openSaveCard() {
   });
 
   const timeMeta = document.createElement('div');
-  timeMeta.textContent = `İzlenen: ${info.watchedTime || '—'} / ${info.totalTime || '—'}`;
+  timeMeta.textContent = `${t('watched')}: ${info.watchedTime || '—'} / ${info.totalTime || '—'}`;
   Object.assign(timeMeta.style, { color: '#888', fontSize: '12px', marginBottom: '12px' });
 
   // Not + etiket inputları
   const noteInput = document.createElement('textarea');
-  noteInput.placeholder = 'Not...';
+  noteInput.placeholder = t('notePlaceholder');
   noteInput.rows = 2;
   styleField(noteInput);
 
@@ -167,17 +168,17 @@ function openSaveCard() {
   Object.assign(btnRow.style, { display: 'flex', gap: '8px', marginTop: '4px' });
 
   const saveBtn = document.createElement('button');
-  saveBtn.textContent = 'Kaydet';
+  saveBtn.textContent = t('save');
   styleButton(saveBtn, '#3ea6ff', '#fff');
 
   const cancelBtn = document.createElement('button');
-  cancelBtn.textContent = 'Kapat';
+  cancelBtn.textContent = t('close');
   styleButton(cancelBtn, '#e0e0e0', '#333');
 
   cancelBtn.addEventListener('click', closeCard);
   saveBtn.addEventListener('click', () => {
     saveBtn.disabled = true;
-    saveBtn.textContent = 'Kaydediliyor...';
+    saveBtn.textContent = t('saving');
     activeSaveBtn = saveBtn;
     const data = { ...info, note: noteInput.value.trim(), tags: tagField.getTags().join(', ') };
 
@@ -185,7 +186,7 @@ function openSaveCard() {
       chrome.runtime.sendMessage({ action: 'saveRow', data });
     } catch (e) {
       // Uzantı güncellenmiş ama sayfa yenilenmemişse buraya düşer
-      showErrorInCard('Uzantı güncellendi, sayfayı yenile (F5)');
+      showErrorInCard(t('reloadNeeded'));
       return;
     }
 
@@ -193,7 +194,7 @@ function openSaveCard() {
     clearTimeout(saveTimeoutId);
     saveTimeoutId = setTimeout(() => {
       if (cardEl && activeSaveBtn === saveBtn) {
-        showErrorInCard("Yanıt gecikti — sheet'i kontrol et");
+        showErrorInCard(t('timeout'));
       }
     }, 15000);
   });
@@ -236,7 +237,7 @@ function createTagInput() {
 
   const input = document.createElement('input');
   input.type = 'text';
-  input.placeholder = 'Etiket ekle (virgül / Tab)';
+  input.placeholder = t('tagPlaceholder');
   Object.assign(input.style, {
     flex: '1', minWidth: '90px', border: '0', outline: 'none',
     fontSize: '13px', fontFamily: 'inherit', padding: '2px 0', background: 'transparent'

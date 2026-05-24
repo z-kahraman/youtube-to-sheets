@@ -101,6 +101,20 @@ h2 {
 
 .hidden { display: none !important; }
 
+/* ---- Dil seçici ---- */
+.lang-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.lang-row .field-label { margin: 0; }
+.lang-row select {
+  width: auto;
+  margin: 0;
+  padding: 6px 10px;
+}
+
 /* ---- Butonlar ---- */
 button {
   background: var(--accent);

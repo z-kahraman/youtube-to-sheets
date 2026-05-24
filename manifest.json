@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YouTube to Sheets",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "YouTube videolarını notlarla Google Sheets'e kaydeder",
   "permissions": ["storage", "identity", "contextMenus"],
   "icons": {
@@ -18,7 +18,7 @@
   "content_scripts": [
     {
       "matches": ["https://www.youtube.com/watch*"],
-      "js": ["content.js"]
+      "js": ["strings.js", "content.js"]
     }
   ],
   "oauth2": {
