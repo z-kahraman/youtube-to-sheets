@@ -53,6 +53,26 @@ Son güncelleme: 2026-05-24.
 - [x] Firefox eklentisi lokalde ÇALIŞIYOR (Web OAuth client + redirect URI `/` dahil)
 - [x] Bug fix: not yazarken space=duraklat (kart içi key olayları stopPropagation)
 
+## 📌 Bugün nerede kaldık (2026-05-24) + YARIN
+
+Bugün yapılanlar:
+- i18n eklendi (TR/EN, strings.js, dil seçici, dile bağlı sheet adı/başlık) → **v0.2.0**.
+- Firefox manifest: strict_min_version **115** (FF 136'da yüklensin diye 142→115),
+  data_collection_permissions kaldırıldı.
+- EN ekran görüntüleri üretildi; AMO listesi dolduruluyor (açıklama + EN görseller +
+  caption'lar + Additional Details: Tags + Homepage=GitHub).
+- Google OAuth: "In production" (drive.file sensitive, doğrulanmamış → 100 kullanıcı cap +
+  "unverified" uyarısı; kişisel kullanım için yeterli, CASA gerekmez).
+
+**YARIN yapılacaklar (öncelik sırası):**
+1. Firefox'ta v0.2.0'ı yükle (`./build.sh` → about:debugging → Load Temporary Add-on
+   `dist/yt2sheets-firefox.zip`) ve TEST ET: dil seçici TR/EN, EN'de yeni sheet başlıkları
+   "Date, Title...", sağ tık menüsü dile göre, space yazımı.
+2. Test tamamsa AMO listesini bitir / v0.2.0'ı yükle ve incelemeye gönder.
+3. (Opsiyonel) Manage Listing'de Türkçe locale ekle: TR Summary/Description + TR ekran
+   görüntüleri (screenshots/*-tr.png).
+4. (Opsiyonel) Chrome'da v0.2.0'ı reload edip i18n'i orada da bir kez doğrula.
+
 ## ⏳ Kalan işler
 
 ### Senin yapacakların
