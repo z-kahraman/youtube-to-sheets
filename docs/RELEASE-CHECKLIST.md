@@ -46,32 +46,26 @@ Son güncelleme: 2026-05-24.
 - **Açık kaynak:** GitHub (MIT).
 - Chrome auth'una (getAuthToken) dokunulmayacak; Firefox için ayrı auth eklenecek.
 
-## ⏳ Yapılacaklar — adım adım
+## ✅ Tamamlanan (bu aşama)
+- [x] GitHub public repo + push (MIT) — github.com/z-kahraman/-youtube-to-sheets
+- [x] İki dilli README (EN birincil + TR)
+- [x] Cross-browser: auth.js, manifest.firefox.json, build.sh, docs/firefox-setup.md
+- [x] Firefox eklentisi lokalde ÇALIŞIYOR (Web OAuth client + redirect URI `/` dahil)
+- [x] Bug fix: not yazarken space=duraklat (kart içi key olayları stopPropagation)
 
-### A. GitHub açık kaynak
-- [x] LICENSE (MIT) + README
-- [ ] GitHub'da public repo aç + push (gh yok → manuel komutlar verilecek)
+## ⏳ Kalan işler
 
-### B. Firefox portu (kod — ben yapıyorum)
-- [ ] Auth soyutlama: Chrome getAuthToken korunur, Firefox için launchWebAuthFlow eklenir
-- [ ] `manifest.firefox.json` (background.scripts, gecko.id, oauth2 yok)
-- [ ] Build script (chrome/firefox ayrı zip)
-- [ ] `docs/firefox-setup.md`
+### Senin yapacakların
+- [ ] **Test doğrula:** Chrome lokal hâlâ çalışıyor mu (auth.js refactor sonrası);
+      Firefox'ta space artık yazıyor mu; Firefox uçtan uca kaydetme.
+- [ ] **PRIVACY.md** → `<destek-email>` doldur (AMO listesi için de gerekli).
+- [ ] **AMO yayını** (kalıcı/herkese açık): addons.mozilla.org hesabı (ücretsiz) →
+      `dist/yt2sheets-firefox.zip` yükle → imzalat. Rehber: docs/firefox-setup.md §6.
+- [ ] (opsiyonel) AMO/README için 1-2 ekran görüntüsü.
+- [ ] (opsiyonel) Repo adındaki baştaki `-`'yi at (GitHub → rename → remote güncelle).
 
-### C. Firefox yayın (senin yapacakların — rehber: docs/firefox-setup.md)
-- [ ] Google Cloud'da **Web application** OAuth client oluştur
-- [ ] Firefox'ta uzantıyı yükle → `browser.identity.getRedirectURL()` değerini al →
-      Google Cloud'da "Authorized redirect URI" olarak ekle
-- [ ] AMO geliştirici hesabı (ücretsiz) → Firefox zip'ini yükle → incele
-
-### D. Lokal test (Chrome — scope değişimi sonrası)
-- [ ] myaccount.google.com/permissions → eski izni kaldır
-- [ ] reload + F5 → yeniden bağlan → yeni sheet oluştur → kaydet
-- [ ] Not `=1+1` düz metin mi? (formül değil)
-- Not: eski HARİCİ sheet artık yazılamaz → yeni oluştur.
-
----
-
-## Sonraki ürün fikirleri (opsiyonel)
-- Picker ile harici sheet seçimi (güvenlik planı Seçenek B — MV3 CSP araştırması)
-- Sayfaya gömülü kalıcı buton, koyu tema, etiket autocomplete, çoklu sheet hedefi
+### Ertelenenler (şimdilik yapılmayacak)
+- Picker ile mevcut sheet seçimi (Seçenek B) — KARAR: şimdilik kalsın. createdSheets
+  tarayıcı başına ayrı; eski notlar Sheets'te doğrudan açılır.
+- Firefox auth: PKCE auth-code flow (implicit yerine) → token yenileme; şu an token ~1s.
+- Polish: koyu tema, sayfaya gömülü buton, etiket autocomplete, çoklu sheet hedefi.
