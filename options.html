@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <title>YouTube to Sheets — Ayarlar</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="logo" aria-hidden="true">▶</div>
+    <div>
+      <h1>YouTube to Sheets</h1>
+      <p class="subtitle">Videolarını Google Sheets'e kaydet</p>
+    </div>
+  </header>
+
+  <div id="not-connected" class="card hidden">
+    <p class="muted">Henüz Google hesabı bağlı değil.</p>
+    <button id="connect-btn">Google ile bağlan</button>
+  </div>
+
+  <div id="connected" class="card hidden">
+    <div class="status">
+      <span class="dot"></span>
+      <span class="status-label">Hesap bağlı</span>
+    </div>
+    <p class="email" id="user-email">...</p>
+    <button id="disconnect-btn" class="secondary">Bağlantıyı kes</button>
+  </div>
+
+  <div id="sheet-section" class="card hidden">
+    <h2><span class="card-icon" aria-hidden="true">📄</span> Hedef Sheet</h2>
+
+    <div id="current-sheet" class="hidden">
+      <p class="muted">Şu an seçili</p>
+      <p class="sheet-name" id="selected-sheet-name"></p>
+      <button id="change-sheet-btn" class="secondary">Değiştir</button>
+    </div>
+
+    <div id="sheet-picker" class="hidden">
+      <label class="field-label">Mevcut bir sheet seç</label>
+      <select id="sheet-list">
+        <option value="">— Yükleniyor —</option>
+      </select>
+      <button id="use-selected-btn">Bu sheet'i kullan</button>
+      <hr>
+      <label class="field-label">Veya yeni bir tane oluştur</label>
+      <input type="text" id="new-sheet-name" value="YouTube İzleme Notları">
+      <button id="create-sheet-btn">Yeni sheet oluştur</button>
+    </div>
+  </div>
+
+  <div id="toast" class="hidden"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- YouTube kırmızısı yuvarlak kare -->
+  <rect x="6" y="6" width="116" height="116" rx="27" fill="#FF0033"/>
+  <!-- Beyaz play üçgeni -->
+  <path d="M45 38 L45 84 L84 61 Z" fill="#ffffff"/>
+  <!-- Google Sheets yeşili ızgara rozeti (köşe) -->
+  <rect x="70" y="70" width="42" height="42" rx="11" fill="#0F9D58" stroke="#ffffff" stroke-width="4"/>
+  <g stroke="#ffffff" stroke-width="4" stroke-linecap="round">
+    <line x1="91" y1="79" x2="91" y2="103"/>
+    <line x1="79" y1="91" x2="103" y2="91"/>
+  </g>
+</svg>
