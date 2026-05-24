@@ -1,70 +1,71 @@
-# YouTube to Sheets Extension
+# YouTube to Sheets
 
-## Ne yapıyor
-Chrome extension. YouTube watch sayfasında sağ tıkla → 
-seçili Google Sheet'e satır olarak kaydet (tarih, başlık, kanal, URL, 
-izleme süresi, not, etiket).
+Guidance for contributors and AI coding assistants (Claude Code, etc.) working on this
+repository. User-facing docs: [README](README.md) / [README.tr](README.tr.md).
 
-## Stack
-- Manifest V3, vanilla JS (framework yok), cross-browser (Chrome + Firefox)
-- Google Sheets API v4 (Drive listeleme KALDIRILDI — bkz. scope daraltma)
-- OAuth 2.0 — scope: drive.file + userinfo.email
-  - Chrome: chrome.identity.getAuthToken
-  - Firefox: browser.identity.launchWebAuthFlow (implicit flow, ayrı Web client)
-- chrome.storage.sync: selectedSheet + createdSheets (uygulama-sahipli liste)
+## What it is
+A Manifest V3 browser extension (Chrome + Firefox) that saves the YouTube video you're
+watching — title, channel, link, watched/total time, plus your note and tags — as a row in
+your own Google Sheet. Triggered by right-click → "Save to Sheet" on a watch page.
 
-## Cross-browser
-- auth.js: tarayıcıya göre dallanan ortak OAuth katmanı (Chrome dalı = eski davranış).
-  background.js (Chrome'da importScripts, Firefox'ta background.scripts) ve options.html
-  bunu yükler.
-- manifest.json = Chrome (service_worker + oauth2). manifest.firefox.json = Firefox
-  (background.scripts + gecko.id, oauth2 YOK).
-- ./build.sh → dist/yt2sheets-chrome.zip + dist/yt2sheets-firefox.zip
-- Firefox auth kurulumu: docs/firefox-setup.md (Web client + redirect URL).
+## Tech stack
+- Manifest V3, vanilla JS (no framework, no build step — `build.sh` only zips files)
+- Google Sheets API v4
+- OAuth 2.0, scopes: `drive.file` + `userinfo.email`
+  - Chrome: `chrome.identity.getAuthToken`
+  - Firefox: `browser.identity.launchWebAuthFlow` (implicit flow, separate Web OAuth client)
+- `chrome.storage.sync`: `selectedSheet`, `createdSheets`, `lang`
 
-## Dosya yapısı
-- manifest.json / manifest.firefox.json — Chrome / Firefox config
-- auth.js — ortak OAuth katmanı (getToken/revokeToken, tarayıcı-bağımsız)
-- strings.js — i18n: TR/EN sözlük + t()/loadLang()/setLang(). Varsayılan tarayıcı dili,
-  ayarlardan değiştirilebilir (storage.sync.lang). UI + context menu + yeni sheet adı/header
-  + tarih locale dile bağlı. content_scripts ve background'a strings.js eklendi.
-- background.js — service worker/event page: context menu, Sheets append
-- content.js — YouTube DOM scrape + overlay not kartı (Shadow DOM) + etiket chip'leri
-- options.html/css/js — setup ekranı, sheet oluştur/seç (uygulama-sahipli)
-- icons/ — icon.svg (kaynak) + icon16/32/48/128.png
-- build.sh — chrome/firefox zip üretimi
-- README.md, LICENSE (MIT), PRIVACY.md
-- docs/ — RELEASE-CHECKLIST, firefox-setup, publishing, store-listing, security-2-oauth-scope-plan
+## Architecture
+- **Cross-browser via shared modules.** `auth.js` and `strings.js` load in every context.
+  `auth.js` exposes `getToken()`/`revokeToken()` and branches on `HAS_GET_AUTH_TOKEN`
+  (Chrome → `getAuthToken`; Firefox → `launchWebAuthFlow`).
+- **Two manifests.** `manifest.json` (Chrome: `service_worker`, `oauth2`) and
+  `manifest.firefox.json` (Firefox: `background.scripts`, `browser_specific_settings.gecko`,
+  no `oauth2`). `build.sh` swaps the manifest and emits `dist/yt2sheets-{chrome,firefox}.zip`.
+- **i18n.** `strings.js` holds TR/EN dictionaries + `t()`/`loadLang()`/`setLang()`. Default
+  language follows the browser; the user can switch it on the options page
+  (`storage.sync.lang`). Language drives UI text, the context menu, and new sheets'
+  name / header row / date locale.
+- **Note card isolation.** The in-page card renders inside a closed Shadow DOM, isolated
+  from YouTube's CSS and scripts; key events are stopped from reaching YouTube shortcuts
+  while typing.
+- **Sheet access model.** With `drive.file` the extension can only touch sheets it created,
+  so it tracks them in `createdSheets` rather than listing all of the user's sheets.
 
-## Konvansiyonlar
-- Inline script YOK (CSP), tüm JS dış dosyada
-- Inline event handler YOK (onclick=...)
-- Yorumlar Türkçe, koddaki değişken adları İngilizce
-- Hata yönetimi: toast() ile kullanıcıya göster
+## Files
+- `manifest.json` / `manifest.firefox.json` — Chrome / Firefox config
+- `auth.js` — browser-agnostic OAuth layer
+- `strings.js` — i18n (TR/EN)
+- `background.js` — service worker / event page: context menu, Sheets append
+- `content.js` — YouTube scrape + note card (Shadow DOM) + tag chips
+- `options.html` / `options.css` / `options.js` — setup page: connect, create/select sheet, language
+- `icons/` — `icon.svg` source + PNGs
+- `build.sh` — builds the per-browser zips
+- `README.md` / `README.tr.md`, `LICENSE` (MIT), `PRIVACY.md` / `PRIVACY.en.md`
+- `docs/` — release checklist, Firefox setup, publishing, store listing, OAuth-scope plan
 
-## Mevcut durum
-- ✅ Options sayfası açılıyor
-- ✅ OAuth çalışıyor (test user + Drive/Sheets API enable gerekli)
-- ✅ Sheet listeleme + oluşturma çalışıyor
-- ✅ Context menu yazıldı (sağ tık → "Sheet'e kaydet")
-- ✅ Content script yazıldı (DOM scrape + overlay not kartı)
-- ⏳ Uçtan uca kaydetme test ediliyor
+## Conventions
+- No inline scripts (CSP); all JS lives in external files.
+- No inline event handlers (`onclick=`); use `addEventListener`.
+- Code comments are in Turkish; identifiers are in English.
+- User-facing strings go through `t()` in `strings.js` (add both TR and EN) — never hardcode.
+- Surface errors to the user (toast on the options page; inline message in the note card).
 
-## Scope daraltma (2026-05-24, public yayın için)
-- Scope artık sadece drive.file + userinfo.email (spreadsheets +
-  drive.metadata.readonly KALDIRILDI) → restricted scope yok, CASA gerekmez.
-- Sonuç: uygulama YALNIZCA kendi oluşturduğu sheet'lere erişir. "Dışarıdan
-  herhangi bir sheet seç" özelliği kaldırıldı; kullanıcı yeni oluşturur veya
-  createdSheets listesinden seçer.
-- Migration: eski selectedSheet harici bir sheet'i gösteriyorsa append 403
-  alır → kullanıcı yeni sheet oluşturmalı.
+## Dev / build
+- Load unpacked — Chrome: `chrome://extensions` → Developer mode → Load unpacked (this folder).
+  Firefox: `about:debugging` → Load Temporary Add-on → `dist/yt2sheets-firefox.zip`.
+- `./build.sh` → `dist/yt2sheets-chrome.zip`, `dist/yt2sheets-firefox.zip`.
+- Each contributor needs their own Google OAuth client(s) — see README and `docs/firefox-setup.md`.
+- After loading/reloading the extension, reload the YouTube tab (the content script re-injects).
 
-## Bilinen sorunlar / gotcha'lar
-- Scope değişince eski OAuth token'lar geçersiz → myaccount.google.com/permissions'tan
-  izni kaldırıp yeniden bağlan (test ederken).
-- Sheets API Cloud projede enable olmalı (Drive API artık gerekmez).
-- Extension ID: Web Store'a yükleyince ID değişir → OAuth client Application ID
-  güncellenmeli veya manifest'e store key eklenmeli (bkz. docs/publishing.md).
-- Sağ tık menüsü sadece youtube.com/watch sayfalarında çıkar.
-- Satır 9 sütun: Tarih, Başlık, Kanal, Kanal Linki, URL, İzleme Süresi,
-  Toplam Süre, Not, Etiketler (A:I).
+## Notes / gotchas
+- Changing OAuth scopes invalidates cached tokens — revoke at
+  https://myaccount.google.com/permissions and reconnect.
+- The extension only accesses sheets it created (`drive.file`); a previously selected
+  external sheet fails to append (HTTP 403).
+- A saved row has 9 columns (A:I): Date, Title, Channel, Channel Link, URL, Watched Time,
+  Total Time, Note, Tags — header/name localized to the selected language for new sheets.
+- The context menu appears only on `youtube.com/watch` pages.
+- Firefox `strict_min_version` is 115; `data_collection_permissions` (Firefox 140+) is
+  intentionally omitted to keep broad compatibility.
