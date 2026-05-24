@@ -11,11 +11,13 @@
     "128": "icons/icon128.png"
   },
   "host_permissions": [
-    "https://*.googleapis.com/*"
+    "https://sheets.googleapis.com/*",
+    "https://www.googleapis.com/*",
+    "https://oauth2.googleapis.com/*"
   ],
   "content_scripts": [
     {
-      "matches": ["*://www.youtube.com/watch*"],
+      "matches": ["https://www.youtube.com/watch*"],
       "js": ["content.js"]
     }
   ],

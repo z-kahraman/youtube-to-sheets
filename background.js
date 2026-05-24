@@ -7,7 +7,7 @@ chrome.runtime.onInstalled.addListener(() => {
     id: 'save-to-sheet',
     title: "Sheet'e kaydet",
     contexts: ['page'],
-    documentUrlPatterns: ['*://www.youtube.com/watch*']
+    documentUrlPatterns: ['https://www.youtube.com/watch*']
   });
 });
 
@@ -29,6 +29,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 // Content script'ten gelen kaydetme isteği
 // ============================================================
 chrome.runtime.onMessage.addListener((msg, sender) => {
+  if (sender.id !== chrome.runtime.id) return; // sadece kendi uzantımızdan gelen mesajları işle
   if (msg.action === 'saveRow') {
     const tabId = sender.tab?.id;
     // İş bitince sonucu tab'a ayrı mesajla push et (yanıt kanalı MV3'te güvenilmez)

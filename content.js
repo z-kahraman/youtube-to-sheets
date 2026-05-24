@@ -1,7 +1,8 @@
 // ============================================================
 // Background'tan gelen mesajları dinle
 // ============================================================
-chrome.runtime.onMessage.addListener((msg) => {
+chrome.runtime.onMessage.addListener((msg, sender) => {
+  if (sender.id !== chrome.runtime.id) return; // sadece kendi uzantımızdan gelen mesajları işle
   if (msg.action === 'openSaveCard') openSaveCard();
   else if (msg.action === 'saveResult') handleSaveResult(msg);
 });
