@@ -61,8 +61,14 @@ Son güncelleme: 2026-05-24.
 - [ ] **PRIVACY.md** → `<destek-email>` doldur (AMO listesi için de gerekli).
 - [ ] **AMO yayını** (kalıcı/herkese açık): addons.mozilla.org hesabı (ücretsiz) →
       `dist/yt2sheets-firefox.zip` yükle → imzalat. Rehber: docs/firefox-setup.md §6.
-- [ ] (opsiyonel) AMO/README için 1-2 ekran görüntüsü.
-- [ ] (opsiyonel) Repo adındaki baştaki `-`'yi at (GitHub → rename → remote güncelle).
+- [x] AMO/README için ekran görüntüleri (screenshots/note-card.png, options.png) — headless render. Mağaza için canlı YouTube üzerinde çekim daha iyi olur.
+- [ ] (opsiyonel) Repo adındaki baştaki `-`'yi at: GitHub → Settings → Rename → `youtube-to-sheets`. Sonra remote güncellenecek.
+
+## Statik test sonuçları (2026-05-24, modern Node v22)
+- [x] JS sözdizimi (auth/background/content/options) — hepsi OK
+- [x] manifest.json + manifest.firefox.json — geçerli JSON
+- [x] build.sh → chrome zip (service_worker+oauth2+doğru scope) / firefox zip (scripts+gecko, oauth2 yok)
+- Canlı tarayıcı E2E (OAuth + YouTube) ekran/etkileşim gerektirir → kullanıcı doğrular.
 
 ### Ertelenenler (şimdilik yapılmayacak)
 - Picker ile mevcut sheet seçimi (Seçenek B) — KARAR: şimdilik kalsın. createdSheets
