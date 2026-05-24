@@ -2,8 +2,6 @@
 
 **Son güncelleme:** 2026-05-24
 
-> Yayınlamadan önce `<destek-email>` ve varsa ana sayfa URL'sini doldur.
-
 ## Özet
 YouTube to Sheets, izlediğin YouTube videolarını notlarınla birlikte **kendi** Google
 Sheets dosyana kaydetmeni sağlayan bir tarayıcı uzantısıdır. Verilerin doğrudan
@@ -25,10 +23,9 @@ Bu veriler yalnızca **senin seçtiğin Google Sheets dosyana** satır olarak ya
   **yoktur**.
 
 ## Yerel depolama
-- `chrome.storage.sync`: yalnızca seçili/oluşturulan sheet'lerin kimlik ve adları tutulur
-  (senin Google hesabınla senkronize edilir).
-- OAuth erişim jetonları Chrome'un `identity` servisi tarafından yönetilir; uzantı
-  bunları ayrıca saklamaz.
+- `storage.sync`: yalnızca seçili/oluşturulan sheet'lerin kimlik ve adları tutulur.
+- OAuth erişim jetonu: Chrome'da `identity` servisi yönetir; Firefox'ta kısa ömürlü
+  jeton yerel depoda (`storage.local`) süresiyle tutulur. Hiçbir sunucuya gönderilmez.
 
 ## Kullanılan izinler (Google OAuth scope'ları)
 - `drive.file`: **Yalnızca** bu uygulamanın oluşturduğu Google Sheets dosyalarına erişir.
@@ -41,4 +38,4 @@ Bu veriler yalnızca **senin seçtiğin Google Sheets dosyana** satır olarak ya
   temizlenir. İzni tümüyle kaldırmak için: https://myaccount.google.com/permissions
 
 ## İletişim
-Sorular için: `<destek-email>`
+Sorular için: zaferkahraman123@gmail.com

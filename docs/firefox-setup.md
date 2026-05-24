@@ -48,11 +48,31 @@ ID'sinden türetilen sabit bir URL** döndürür — yani tek URI tüm kullanıc
   `http://127.0.0.1/mozoauth2/<getRedirectURL alt-domaini>` da kullanılabilir.
 - Implicit flow Google tarafında kısıtlanırsa PKCE'ye geçilir.
 
-## 6. AMO yayını (addons.mozilla.org)
-- Geliştirici hesabı **ücretsiz**.
-- `dist/yt2sheets-firefox.zip`'i yükle → imzalanır.
-- Vanilla JS (build/minify yok) → kaynak gönderimi genelde gerekmez.
-- Her yeni sürümde `manifest.firefox.json` `version` artır + yeniden paketle.
+## 6. AMO yayını (addons.mozilla.org) — ücretsiz
+
+Paket hazır: `web-ext lint` = 0 hata. (`data_collection_permissions: none` eklendi,
+`strict_min_version: 142` → bu anahtar Firefox 140+/Android 142+ ister.)
+
+Adımlar:
+1. [addons.mozilla.org](https://addons.mozilla.org) → giriş (Mozilla hesabı) → **Developer Hub**
+   → **Submit a New Add-on**.
+2. Dağıtım türü:
+   - **"On this site" (listed)** → AMO'da herkese açık listelenir. ← genel kullanım için.
+   - "On your own" → kendin dağıttığın imzalı `.xpi` (listelenmez).
+3. `dist/yt2sheets-firefox.zip` yükle → otomatik doğrulama (aynı web-ext lint).
+4. **Kaynak kodu:** build/minify yok (sadece zip) → kaynak gönderimi gerekmez.
+   Sorarlarsa GitHub linki: https://github.com/z-kahraman/youtube-to-sheets
+5. Listeleme: ad, özet, açıklama (`docs/store-listing.md`), kategori, ekran görüntüleri
+   (`screenshots/`), **gizlilik politikası** (PRIVACY.md içeriği veya host URL'si).
+6. Gönder → inceleme.
+7. Her yeni sürümde `manifest.firefox.json` `version` artır + `./build.sh`.
+
+### ⚠️ AMO ≠ herkes bağlanabilir
+AMO listesi herkesin **kurmasını** sağlar; ama **Google'a bağlanmak** için Google
+tarafındaki Web OAuth client'ın "Testing" modundaysa yalnızca **test user'lar**
+bağlanabilir. Tam herkese açık kullanım için Google consent screen'i **"In production"**
+yapıp doğrulatman gerekir (drive.file "sensitive" scope → marka + scope doğrulaması;
+pahalı CASA gerekmez). Kendin + birkaç test kullanıcı için test mode yeterli.
 
 ## Kaynaklar
 - [identity.launchWebAuthFlow — MDN](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/identity/launchWebAuthFlow)
