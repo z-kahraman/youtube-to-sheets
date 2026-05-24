@@ -8,7 +8,7 @@
 // Firefox için Google Cloud "Web application" client ID'si.
 // (Chrome'unkinden FARKLI bir client; bkz. docs/firefox-setup.md)
 const FIREFOX_OAUTH = {
-  clientId: 'FIREFOX_WEB_CLIENT_ID.apps.googleusercontent.com',
+  clientId: '875793692307-00l7h555v4jots8ndrqre07l8en45p4c.apps.googleusercontent.com',
   scopes: [
     'https://www.googleapis.com/auth/drive.file',
     'https://www.googleapis.com/auth/userinfo.email'

@@ -130,6 +130,13 @@ function openSaveCard() {
     lineHeight: '1.4'
   });
 
+  // YouTube'un klavye kısayolları (space=duraklat, k, f, j, l...) not yazarken
+  // tetiklenmesin: kart içindeki tuş olaylarını sayfaya sızdırma.
+  // (Kart closed Shadow DOM'da olduğu için YouTube odaklı input'u göremiyor.)
+  ['keydown', 'keyup', 'keypress'].forEach((type) => {
+    card.addEventListener(type, (e) => e.stopPropagation());
+  });
+
   // Başlık satırı
   const header = document.createElement('div');
   header.textContent = "📋 Sheet'e kaydet";
