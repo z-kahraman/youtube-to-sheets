@@ -1,3 +1,5 @@
+🇬🇧 [English](PRIVACY.en.md) | 🇹🇷 **Türkçe**
+
 # Gizlilik Politikası — YouTube to Sheets
 
 **Son güncelleme:** 2026-05-24
