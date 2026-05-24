@@ -9,6 +9,10 @@ Works on Chrome and Firefox.
 Privacy-first: your data goes straight from your browser to Google — **no** third-party
 servers, analytics, or ads. The extension only accesses Sheets it created (`drive.file`).
 
+## Screenshots
+![Note card on a YouTube watch page](screenshots/note-card.png)
+![Setup / options page](screenshots/options.png)
+
 ## Features
 - **Right-click → "Save to Sheet"** on any YouTube watch page
 - A small note card opens at the cursor (isolated in a closed Shadow DOM)
