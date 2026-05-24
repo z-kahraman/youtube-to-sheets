@@ -59,10 +59,11 @@ Son güncelleme: 2026-05-24.
 - [ ] **Test doğrula:** Chrome lokal hâlâ çalışıyor mu (auth.js refactor sonrası);
       Firefox'ta space artık yazıyor mu; Firefox uçtan uca kaydetme.
 - [x] **PRIVACY.md** → iletişim e-postası dolduruldu (zaferkahraman123@gmail.com).
-- [ ] **AMO yayını** (kalıcı/herkese açık): addons.mozilla.org hesabı (ücretsiz) →
-      `dist/yt2sheets-firefox.zip` yükle (listed) → imzalat. Rehber: docs/firefox-setup.md §6.
-      Paket AMO'ya hazır: web-ext lint = 0 hata (data_collection: none, min 142).
+- [x] **AMO yayını:** v0.1.0 gönderildi (2026-05-24, listed, MIT). İnceleme/yayın bekleniyor
+      (~24s veya manuel inceleme). Validation geçti (0 hata).
+- [ ] Beklerken "Manage Listing": ekran görüntüleri (screenshots/) + İngilizce çeviri ekle.
 - [ ] (herkese açık istersen) Google consent screen → "In production" + doğrulama.
+      İnceleme "Google'a bağlanamadım" derse: reviewer e-postasını Google test users'a ekle.
 - [x] AMO/README için ekran görüntüleri (screenshots/note-card.png, options.png) — headless render. Mağaza için canlı YouTube üzerinde çekim daha iyi olur.
 - [ ] (opsiyonel) Repo adındaki baştaki `-`'yi at: GitHub → Settings → Rename → `youtube-to-sheets`. Sonra remote güncellenecek.
 
