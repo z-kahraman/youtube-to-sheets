@@ -64,8 +64,12 @@ your own Google Sheet. Triggered by right-click → "Save to Sheet" on a watch p
   https://myaccount.google.com/permissions and reconnect.
 - The extension only accesses sheets it created (`drive.file`); a previously selected
   external sheet fails to append (HTTP 403).
-- A saved row has 9 columns (A:I): Date, Title, Channel, Channel Link, URL, Watched Time,
-  Total Time, Note, Tags — header/name localized to the selected language for new sheets.
+- A saved row has 10 columns (A:J): Date, Title, Channel, Channel Link, URL, Watched Time,
+  Total Time, Note, Tags, Status — header/name localized to the selected language for new sheets.
+- Saving is an upsert keyed by the video URL (column E): an existing row is updated
+  (note appended, tags merged, watched time refreshed) instead of adding a duplicate row.
+  Status (Watched / Partially watched / Opened) is auto-derived from watch progress and
+  editable in the card. Sheets created before this column only differ by a missing J header.
 - The context menu appears only on `youtube.com/watch` pages.
 - Firefox `strict_min_version` is 115; `data_collection_permissions` (Firefox 140+) is
   intentionally omitted to keep broad compatibility.
