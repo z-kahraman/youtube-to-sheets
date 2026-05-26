@@ -14,12 +14,17 @@ servers, analytics, or ads. The extension only accesses Sheets it created (`driv
 ![Setup / options page](screenshots/options-en.png)
 
 ## Features
-- **Right-click → "Save to Sheet"** on any YouTube watch page
+- **Right-click → "Save to Sheet"** on any YouTube watch page, or use the
+  **"Save this video?" prompt** that appears when a video opens (once per video)
 - A small note card opens at the cursor (isolated in a closed Shadow DOM)
 - Auto-filled info: title, channel, channel link, video URL, watched / total time
 - Note + multiple **tags** (chips via comma / Tab / Enter)
-- Create a sheet, or pick from ones you previously created (with the app)
-- 9-column row: Date, Title, Channel, Channel Link, URL, Watched Time, Total Time, Note, Tags
+- **One row per video (upsert):** saving the same video again updates its row —
+  note appended, tags merged, watched time refreshed — instead of duplicating
+- **Status** auto-derived from watch progress (Watched / Partially watched / Opened), editable in the card
+- Create a sheet, pick one you created, or **open it** in a new tab from the options page
+- **Light / dark / auto theme** (options page) + TR/EN language
+- 10-column row: Date, Title, Channel, Channel Link, URL, Watched Time, Total Time, Note, Tags, Status
 
 ## Install (local / developer mode)
 
@@ -48,8 +53,8 @@ create your own clients (these are not secrets, but they won't work for you):
 - `manifest.json` / `manifest.firefox.json` — Chrome / Firefox configuration
 - `auth.js` — browser-agnostic OAuth layer
 - `background.js` — service worker / event page: context menu, Sheets append
-- `content.js` — YouTube DOM scrape + note card (Shadow DOM)
-- `options.html/css/js` — setup screen, create/select a sheet
+- `content.js` — YouTube DOM scrape + on-open prompt + note card (Shadow DOM) + status
+- `options.html/css/js` — setup screen: connect, create/select/open sheet, language, theme
 - `icons/` — logo (svg source + pngs)
 - `build.sh` — builds the chrome/firefox zips
 - `docs/` — Firefox setup, publishing, and store-listing guides

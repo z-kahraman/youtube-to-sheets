@@ -157,9 +157,12 @@ async function refreshUI() {
   show('sheet-section');
 
   try {
-    document.getElementById('user-email').textContent = await getUserEmail(token);
+    const email = await getUserEmail(token);
+    document.getElementById('user-email').textContent = email;
+    document.getElementById('user-avatar').textContent = (email.trim()[0] || '?').toUpperCase();
   } catch {
     document.getElementById('user-email').textContent = t('emailFail');
+    document.getElementById('user-avatar').textContent = '?';
   }
 
   // Seçili sheet var mı?

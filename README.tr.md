@@ -15,12 +15,17 @@ analitik veya reklam **yok**. Uzantı yalnızca kendi oluşturduğu Sheets dosya
 ![Kurulum / ayarlar sayfası](screenshots/options-tr.png)
 
 ## Özellikler
-- YouTube watch sayfasında **sağ tık → "Sheet'e kaydet"**
+- YouTube watch sayfasında **sağ tık → "Sheet'e kaydet"**, ya da video açılınca
+  çıkan **"Bu videoyu kaydedeyim mi?" balonu** (her video için bir kez)
 - İmlecin olduğu yerde küçük not kartı (closed Shadow DOM ile izole)
 - Otomatik bilgi: başlık, kanal, kanal linki, video URL'si, izlenen/toplam süre
 - Not + çoklu **etiket** (virgül / Tab / Enter ile chip)
-- Sheet oluştur veya daha önce (uygulamayla) oluşturduklarından seç
-- 9 sütunlu satır: Tarih, Başlık, Kanal, Kanal Linki, URL, İzleme Süresi, Toplam Süre, Not, Etiketler
+- **Video başına tek satır (upsert):** aynı videoyu tekrar kaydedince satır güncellenir —
+  not altına eklenir, etiketler birleşir, izleme süresi tazelenir — yeni satır açılmaz
+- İlerlemeye göre otomatik **Durum** (İzlendi / Kısmen izlendi / Açıldı), kartta düzenlenebilir
+- Sheet oluştur, oluşturduklarından seç ya da ayarlar sayfasından **yeni sekmede aç**
+- **Açık / koyu / otomatik tema** (ayarlar sayfası) + TR/EN dil
+- 10 sütunlu satır: Tarih, Başlık, Kanal, Kanal Linki, URL, İzleme Süresi, Toplam Süre, Not, Etiketler, Durum
 
 ## Kurulum (lokal / geliştirici modu)
 
@@ -49,8 +54,8 @@ client'larını oluşturman gerekir (gizli anahtar değildir ama sana çalışma
 - `manifest.json` / `manifest.firefox.json` — Chrome / Firefox yapılandırması
 - `auth.js` — tarayıcı-bağımsız OAuth katmanı
 - `background.js` — service worker / event page: context menu, Sheets append
-- `content.js` — YouTube DOM scrape + not kartı (Shadow DOM)
-- `options.html/css/js` — kurulum ekranı, sheet oluştur/seç
+- `content.js` — YouTube DOM scrape + açılış balonu + not kartı (Shadow DOM) + durum
+- `options.html/css/js` — kurulum ekranı: bağlan, sheet oluştur/seç/aç, dil, tema
 - `icons/` — logo (svg kaynağı + png'ler)
 - `build.sh` — chrome/firefox zip üretimi
 - `docs/` — Firefox kurulum, yayın ve mağaza-listesi rehberleri

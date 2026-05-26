@@ -118,11 +118,31 @@ function showErrorInCard(message) {
 }
 
 // ============================================================
+// Kart/balon renk paleti — YouTube koyu temadaysa (html[dark]) veya sistem
+// koyu temadaysa koyu renkler. Sayfaya gömülü kart YouTube'la uyumlu görünsün.
+// ============================================================
+function isDarkContext() {
+  return document.documentElement.hasAttribute('dark') ||
+    (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+
+function currentPalette() {
+  return isDarkContext()
+    ? { bg: '#212121', text: '#f1f1f1', sub: '#bbbbbb', faint: '#888888',
+        border: '#3d3d3d', field: '#121212', secBg: '#3d3d3d', secText: '#f1f1f1' }
+    : { bg: '#ffffff', text: '#1a1a1a', sub: '#555555', faint: '#888888',
+        border: '#cccccc', field: '#ffffff', secBg: '#e0e0e0', secText: '#333333' };
+}
+
+let pal = currentPalette();
+
+// ============================================================
 // Not kartını aç (sağ tık konumunda)
 // ============================================================
 async function openSaveCard() {
   await loadLang();
   closeCard();
+  pal = currentPalette();
   const info = scrapeVideoInfo();
 
   // Closed Shadow DOM host → kart, sayfa scriptlerinden ve YouTube CSS'inden izole
@@ -135,7 +155,7 @@ async function openSaveCard() {
   Object.assign(card.style, {
     position: 'fixed', top: '0', left: '0', zIndex: '2147483647',
     width: '320px', boxSizing: 'border-box',
-    background: '#fff', color: '#1a1a1a',
+    background: pal.bg, color: pal.text,
     borderRadius: '12px', boxShadow: '0 8px 28px rgba(0,0,0,0.28)',
     padding: '16px', fontFamily: 'Roboto, Arial, sans-serif', fontSize: '14px',
     lineHeight: '1.4'
@@ -157,13 +177,13 @@ async function openSaveCard() {
   const meta = document.createElement('div');
   meta.textContent = `${info.title} — ${info.channel}`;
   Object.assign(meta.style, {
-    color: '#555', fontSize: '12px', marginBottom: '4px',
+    color: pal.sub, fontSize: '12px', marginBottom: '4px',
     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
   });
 
   const timeMeta = document.createElement('div');
   timeMeta.textContent = `${t('watched')}: ${info.watchedTime || '—'} / ${info.totalTime || '—'}`;
-  Object.assign(timeMeta.style, { color: '#888', fontSize: '12px', marginBottom: '12px' });
+  Object.assign(timeMeta.style, { color: pal.faint, fontSize: '12px', marginBottom: '12px' });
 
   // Not + etiket inputları
   const noteInput = document.createElement('textarea');
@@ -180,11 +200,11 @@ async function openSaveCard() {
   });
   const statusLabel = document.createElement('span');
   statusLabel.textContent = t('statusLabel');
-  Object.assign(statusLabel.style, { fontSize: '12px', color: '#555', flex: '0 0 auto' });
+  Object.assign(statusLabel.style, { fontSize: '12px', color: pal.sub, flex: '0 0 auto' });
   const statusSelect = document.createElement('select');
   Object.assign(statusSelect.style, {
-    flex: '1', padding: '7px', borderRadius: '6px', border: '1px solid #ccc',
-    fontSize: '13px', fontFamily: 'inherit', background: '#fff'
+    flex: '1', padding: '7px', borderRadius: '6px', border: `1px solid ${pal.border}`,
+    fontSize: '13px', fontFamily: 'inherit', background: pal.field, color: pal.text
   });
   ['statusWatched', 'statusPartial', 'statusOpened'].forEach((key) => {
     const opt = document.createElement('option');
@@ -205,7 +225,7 @@ async function openSaveCard() {
 
   const cancelBtn = document.createElement('button');
   cancelBtn.textContent = t('close');
-  styleButton(cancelBtn, '#e0e0e0', '#333');
+  styleButton(cancelBtn, pal.secBg, pal.secText);
 
   cancelBtn.addEventListener('click', closeCard);
   saveBtn.addEventListener('click', () => {
@@ -269,8 +289,8 @@ function createTagInput() {
   Object.assign(wrap.style, {
     display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center',
     width: '100%', boxSizing: 'border-box', padding: '6px 8px',
-    margin: '0 0 8px', borderRadius: '6px', border: '1px solid #ccc',
-    minHeight: '38px', cursor: 'text'
+    margin: '0 0 8px', borderRadius: '6px', border: `1px solid ${pal.border}`,
+    minHeight: '38px', cursor: 'text', background: pal.field
   });
 
   const input = document.createElement('input');
@@ -278,7 +298,8 @@ function createTagInput() {
   input.placeholder = t('tagPlaceholder');
   Object.assign(input.style, {
     flex: '1', minWidth: '90px', border: '0', outline: 'none',
-    fontSize: '13px', fontFamily: 'inherit', padding: '2px 0', background: 'transparent'
+    fontSize: '13px', fontFamily: 'inherit', padding: '2px 0', background: 'transparent',
+    color: pal.text
   });
 
   function addTag(raw) {
@@ -345,8 +366,9 @@ function createTagInput() {
 function styleField(el) {
   Object.assign(el.style, {
     width: '100%', boxSizing: 'border-box', padding: '8px',
-    margin: '0 0 8px', borderRadius: '6px', border: '1px solid #ccc',
-    fontSize: '13px', fontFamily: 'inherit', resize: 'vertical'
+    margin: '0 0 8px', borderRadius: '6px', border: `1px solid ${pal.border}`,
+    fontSize: '13px', fontFamily: 'inherit', resize: 'vertical',
+    background: pal.field, color: pal.text
   });
 }
 
@@ -389,6 +411,7 @@ async function maybeShowPrompt() {
 
 function showPrompt() {
   closePrompt();
+  pal = currentPalette();
 
   // Closed Shadow DOM → balon, YouTube CSS'inden ve scriptlerinden izole
   promptHost = document.createElement('div');
@@ -399,7 +422,7 @@ function showPrompt() {
   Object.assign(bar.style, {
     position: 'fixed', top: '70px', right: '24px', zIndex: '2147483646',
     display: 'flex', alignItems: 'center', gap: '10px',
-    background: '#fff', color: '#1a1a1a',
+    background: pal.bg, color: pal.text,
     borderRadius: '10px', boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
     padding: '10px 12px', fontFamily: 'Roboto, Arial, sans-serif', fontSize: '13px'
   });
@@ -414,7 +437,7 @@ function showPrompt() {
 
   const noBtn = document.createElement('button');
   noBtn.textContent = '×';
-  styleButton(noBtn, '#e0e0e0', '#333');
+  styleButton(noBtn, pal.secBg, pal.secText);
   Object.assign(noBtn.style, { flex: '0 0 auto', padding: '7px 12px' });
 
   // "Kaydet" → mevcut not/etiket kartını aç; "×" → balonu kapat

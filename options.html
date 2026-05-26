@@ -7,7 +7,9 @@
 </head>
 <body>
   <header class="app-header">
-    <div class="logo" aria-hidden="true">▶</div>
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    </div>
     <div>
       <h1>YouTube to Sheets</h1>
       <p class="subtitle" data-i18n="subtitle"></p>
@@ -39,16 +41,26 @@
   </div>
 
   <div id="connected" class="card hidden">
-    <div class="status">
-      <span class="dot"></span>
-      <span class="status-label" data-i18n="accountConnected"></span>
+    <div class="account-row">
+      <div class="avatar" id="user-avatar" aria-hidden="true"></div>
+      <div class="account-info">
+        <div class="status">
+          <span class="dot"></span>
+          <span class="status-label" data-i18n="accountConnected"></span>
+        </div>
+        <p class="email" id="user-email">...</p>
+      </div>
     </div>
-    <p class="email" id="user-email">...</p>
     <button id="disconnect-btn" class="secondary" data-i18n="disconnect"></button>
   </div>
 
   <div id="sheet-section" class="card hidden">
-    <h2><span class="card-icon" aria-hidden="true">📄</span> <span data-i18n="targetSheet"></span></h2>
+    <h2>
+      <span class="card-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h8"/></svg>
+      </span>
+      <span data-i18n="targetSheet"></span>
+    </h2>
 
     <div id="current-sheet" class="hidden">
       <p class="muted" data-i18n="currentlySelected"></p>

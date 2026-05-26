@@ -14,7 +14,7 @@ your own Google Sheet. Triggered by right-click → "Save to Sheet" on a watch p
 - OAuth 2.0, scopes: `drive.file` + `userinfo.email`
   - Chrome: `chrome.identity.getAuthToken`
   - Firefox: `browser.identity.launchWebAuthFlow` (implicit flow, separate Web OAuth client)
-- `chrome.storage.sync`: `selectedSheet`, `createdSheets`, `lang`
+- `chrome.storage.sync`: `selectedSheet`, `createdSheets`, `lang`, `theme`
 
 ## Architecture
 - **Cross-browser via shared modules.** `auth.js` and `strings.js` load in every context.
@@ -27,9 +27,17 @@ your own Google Sheet. Triggered by right-click → "Save to Sheet" on a watch p
   language follows the browser; the user can switch it on the options page
   (`storage.sync.lang`). Language drives UI text, the context menu, and new sheets'
   name / header row / date locale.
+- **Theming.** The options page supports auto / light / dark via `storage.sync.theme`,
+  driven by CSS variables + `[data-theme]` on `<html>` (auto follows `prefers-color-scheme`,
+  no FOUC since the default is hardcoded in HTML). Accent stays blue; red is reserved for
+  the brand mark and destructive actions. The in-page card/prompt follow YouTube's own
+  theme (`html[dark]`) for visual cohesion.
 - **Note card isolation.** The in-page card renders inside a closed Shadow DOM, isolated
-  from YouTube's CSS and scripts; key events are stopped from reaching YouTube shortcuts
-  while typing.
+  from YouTube's CSS and scripts. A `window`-capture key shield stops keystrokes — including
+  other extensions' shortcuts (e.g. Video Speed Controller's z/x seek) — from reaching the
+  page while typing in the card; Enter/Tab/Backspace/comma pass through for the tag input.
+  An on-open "save this video?" prompt is shown once per video (SPA-aware via
+  `yt-navigate-finish`).
 - **Sheet access model.** With `drive.file` the extension can only touch sheets it created,
   so it tracks them in `createdSheets` rather than listing all of the user's sheets.
 
@@ -38,8 +46,8 @@ your own Google Sheet. Triggered by right-click → "Save to Sheet" on a watch p
 - `auth.js` — browser-agnostic OAuth layer
 - `strings.js` — i18n (TR/EN)
 - `background.js` — service worker / event page: context menu, Sheets append
-- `content.js` — YouTube scrape + note card (Shadow DOM) + tag chips
-- `options.html` / `options.css` / `options.js` — setup page: connect, create/select sheet, language
+- `content.js` — YouTube scrape + on-open prompt + note card (Shadow DOM) + tag chips + status
+- `options.html` / `options.css` / `options.js` — setup page: connect, create/select/open sheet, language, theme
 - `icons/` — `icon.svg` source + PNGs
 - `build.sh` — builds the per-browser zips
 - `README.md` / `README.tr.md`, `LICENSE` (MIT), `PRIVACY.md` / `PRIVACY.en.md`
