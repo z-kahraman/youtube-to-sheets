@@ -25,6 +25,15 @@ function formatTime(seconds) {
   return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
 }
 
+// İlerlemeye göre otomatik durum: %90+ izlendi, %10+ kısmen, altı açıldı
+function computeStatusKey(video) {
+  if (!video || !video.duration || isNaN(video.duration)) return 'statusOpened';
+  const ratio = video.currentTime / video.duration;
+  if (ratio >= 0.9) return 'statusWatched';
+  if (ratio >= 0.1) return 'statusPartial';
+  return 'statusOpened';
+}
+
 // ============================================================
 // YouTube sayfasından video bilgisini çek
 // ============================================================
@@ -47,7 +56,8 @@ function scrapeVideoInfo() {
     channelUrl: channelEl?.href || '',
     url,
     watchedTime: video ? formatTime(video.currentTime) : '',
-    totalTime: video ? formatTime(video.duration) : ''
+    totalTime: video ? formatTime(video.duration) : '',
+    statusKey: computeStatusKey(video)
   };
 }
 
@@ -163,6 +173,28 @@ async function openSaveCard() {
 
   const tagField = createTagInput();
 
+  // Durum seçici: ilerlemeye göre otomatik dolu, elle değiştirilebilir
+  const statusWrap = document.createElement('div');
+  Object.assign(statusWrap.style, {
+    display: 'flex', alignItems: 'center', gap: '8px', margin: '0 0 10px'
+  });
+  const statusLabel = document.createElement('span');
+  statusLabel.textContent = t('statusLabel');
+  Object.assign(statusLabel.style, { fontSize: '12px', color: '#555', flex: '0 0 auto' });
+  const statusSelect = document.createElement('select');
+  Object.assign(statusSelect.style, {
+    flex: '1', padding: '7px', borderRadius: '6px', border: '1px solid #ccc',
+    fontSize: '13px', fontFamily: 'inherit', background: '#fff'
+  });
+  ['statusWatched', 'statusPartial', 'statusOpened'].forEach((key) => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = t(key);
+    statusSelect.appendChild(opt);
+  });
+  statusSelect.value = info.statusKey;
+  statusWrap.append(statusLabel, statusSelect);
+
   // Buton satırı
   const btnRow = document.createElement('div');
   Object.assign(btnRow.style, { display: 'flex', gap: '8px', marginTop: '4px' });
@@ -180,7 +212,7 @@ async function openSaveCard() {
     saveBtn.disabled = true;
     saveBtn.textContent = t('saving');
     activeSaveBtn = saveBtn;
-    const data = { ...info, note: noteInput.value.trim(), tags: tagField.getTags().join(', ') };
+    const data = { ...info, note: noteInput.value.trim(), tags: tagField.getTags().join(', '), status: statusSelect.value };
 
     try {
       chrome.runtime.sendMessage({ action: 'saveRow', data });
@@ -200,13 +232,19 @@ async function openSaveCard() {
   });
 
   btnRow.append(saveBtn, cancelBtn);
-  card.append(header, meta, timeMeta, noteInput, tagField.wrap, btnRow);
+  card.append(header, meta, timeMeta, noteInput, tagField.wrap, statusWrap, btnRow);
   shadow.appendChild(card);
   document.body.appendChild(cardHost);
   cardEl = card;
 
   positionCard(card);
-  noteInput.focus();
+  // Firefox'ta yeni eklenen closed-shadow input'a odak ilk karede oturmayabiliyor;
+  // bir sonraki karede odakla. Odak kartta değilse tuşlar YouTube'a gider
+  // (video oynar / ileri-geri sarar). preventScroll: sayfa zıplamasın.
+  requestAnimationFrame(() => {
+    try { noteInput.focus({ preventScroll: true }); }
+    catch { noteInput.focus(); }
+  });
 }
 
 // Kartı sağ tık konumuna yerleştir, viewport dışına taşırsa içeri çek
@@ -319,3 +357,104 @@ function styleButton(el, bg, fg) {
     cursor: 'pointer', fontSize: '13px'
   });
 }
+
+// ============================================================
+// Video açılışında "kaydedeyim mi?" balonu
+//  - YouTube SPA olduğu için her video geçişinde tetiklenir
+//  - Aynı videoyu ikinci kez sormaz (rahatsız etmesin)
+// ============================================================
+let promptHost = null;
+const promptedVideos = new Set();
+
+function currentVideoId() {
+  if (location.pathname !== '/watch') return null;
+  return new URLSearchParams(location.search).get('v');
+}
+
+function closePrompt() {
+  document.querySelectorAll('div[data-yt2sheets-prompt]').forEach((el) => el.remove());
+  promptHost = null;
+}
+
+// Watch sayfasındaysak ve bu videoyu daha önce sormadıysak balonu göster
+async function maybeShowPrompt() {
+  const vid = currentVideoId();
+  if (!vid) { closePrompt(); return; }  // watch sayfası değil → varsa balonu kaldır
+  if (promptedVideos.has(vid)) return;  // bu videoyu zaten sorduk
+  if (cardEl) return;                   // not kartı zaten açık
+  promptedVideos.add(vid);
+  await loadLang();
+  showPrompt();
+}
+
+function showPrompt() {
+  closePrompt();
+
+  // Closed Shadow DOM → balon, YouTube CSS'inden ve scriptlerinden izole
+  promptHost = document.createElement('div');
+  promptHost.setAttribute('data-yt2sheets-prompt', '');
+  const shadow = promptHost.attachShadow({ mode: 'closed' });
+
+  const bar = document.createElement('div');
+  Object.assign(bar.style, {
+    position: 'fixed', top: '70px', right: '24px', zIndex: '2147483646',
+    display: 'flex', alignItems: 'center', gap: '10px',
+    background: '#fff', color: '#1a1a1a',
+    borderRadius: '10px', boxShadow: '0 6px 20px rgba(0,0,0,0.25)',
+    padding: '10px 12px', fontFamily: 'Roboto, Arial, sans-serif', fontSize: '13px'
+  });
+
+  const text = document.createElement('span');
+  text.textContent = t('promptText');
+
+  const yesBtn = document.createElement('button');
+  yesBtn.textContent = t('save');
+  styleButton(yesBtn, '#3ea6ff', '#fff');
+  Object.assign(yesBtn.style, { flex: '0 0 auto', padding: '7px 14px' });
+
+  const noBtn = document.createElement('button');
+  noBtn.textContent = '×';
+  styleButton(noBtn, '#e0e0e0', '#333');
+  Object.assign(noBtn.style, { flex: '0 0 auto', padding: '7px 12px' });
+
+  // "Kaydet" → mevcut not/etiket kartını aç; "×" → balonu kapat
+  // (sağ tık konumunu sıfırla ki kart varsayılan sağ-üst konumda açılsın)
+  yesBtn.addEventListener('click', () => {
+    lastRightClick = { x: null, y: null };
+    closePrompt();
+    openSaveCard();
+  });
+  noBtn.addEventListener('click', closePrompt);
+
+  bar.append(text, yesBtn, noBtn);
+  shadow.appendChild(bar);
+  document.body.appendChild(promptHost);
+}
+
+// YouTube SPA: her video geçişinde + ilk doğrudan yüklemede tetikle
+document.addEventListener('yt-navigate-finish', maybeShowPrompt);
+maybeShowPrompt();
+
+// ============================================================
+// Klavye kalkanı — kart açık ve odak karttayken, sayfanın/diğer eklentilerin
+// tuşları yakalamasını engelle:
+//   • YouTube kısayolları (space, k, j, l, oklar, sayılar…)
+//   • "Video Speed Controller" gibi eklentiler (z = geri sar, x = ileri sar…)
+// Bu işleyiciler çoğu zaman CAPTURE aşamasında dinler; kart closed Shadow
+// DOM'da olduğu için event.target'ı sıradan bir <div> görür ve "input değil"
+// sanıp videoyu sarar. Bu yüzden window'da CAPTURE'da, herkesten önce durdururuz.
+//   • preventDefault YOK → karakter yine input'a yazılır.
+//   • Tag girişinin gerektirdiği tuşlar (Enter/Tab/Backspace/virgül) geçer;
+//     bunlar zaten sar/oynat kısayolu değil, chip mantığının çalışması için lazım.
+const PASS_THROUGH_KEYS = new Set(['Enter', 'Tab', 'Backspace', ',']);
+
+function keyShield(e) {
+  if (!cardHost) return;                            // kart kapalı
+  if (document.activeElement !== cardHost) return;  // odak bizim kartta değil
+  if (PASS_THROUGH_KEYS.has(e.key)) return;         // tag girişine bırak
+  e.stopPropagation();
+}
+
+['keydown', 'keyup', 'keypress'].forEach((type) => {
+  window.addEventListener(type, keyShield, true); // capture: herkesten önce yakala
+});

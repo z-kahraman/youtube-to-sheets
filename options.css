@@ -9,6 +9,42 @@
   --red: #ff0033;
   --green: #2ecc71;
   --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 6px 18px rgba(0,0,0,0.06);
+  --btn-secondary-bg: #f2f2f2;
+  --btn-secondary-hover: #e6e6e6;
+  --btn-secondary-text: #0f0f0f;
+  --input-bg: #ffffff;
+  --hint-bg: rgba(62,166,255,0.08);
+}
+
+/* Koyu palet (mavi vurgu korunur) */
+:root[data-theme="dark"] {
+  --bg: #0f0f0f;
+  --card: #212121;
+  --text: #f1f1f1;
+  --muted: #aaaaaa;
+  --border: #303030;
+  --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 6px 18px rgba(0,0,0,0.35);
+  --btn-secondary-bg: #303030;
+  --btn-secondary-hover: #3d3d3d;
+  --btn-secondary-text: #f1f1f1;
+  --input-bg: #121212;
+  --hint-bg: rgba(62,166,255,0.12);
+}
+/* Otomatik: sistem koyu temadaysa koyu paleti uygula */
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] {
+    --bg: #0f0f0f;
+    --card: #212121;
+    --text: #f1f1f1;
+    --muted: #aaaaaa;
+    --border: #303030;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 6px 18px rgba(0,0,0,0.35);
+    --btn-secondary-bg: #303030;
+    --btn-secondary-hover: #3d3d3d;
+    --btn-secondary-text: #f1f1f1;
+    --input-bg: #121212;
+    --hint-bg: rgba(62,166,255,0.12);
+  }
 }
 
 * { box-sizing: border-box; }
@@ -20,6 +56,7 @@ body {
   padding: 40px 24px;
   color: var(--text);
   background: var(--bg);
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 /* ---- Başlık ---- */
@@ -53,6 +90,7 @@ h1 { font-size: 22px; margin: 0; line-height: 1.2; }
   padding: 20px;
   margin-bottom: 16px;
   box-shadow: var(--shadow);
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 h2 {
   font-size: 15px;
@@ -101,15 +139,20 @@ h2 {
 
 .hidden { display: none !important; }
 
-/* ---- Dil seçici ---- */
-.lang-row {
+/* ---- Ayar seçicileri (dil + tema) ---- */
+.settings-row {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 20px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
 }
-.lang-row .field-label { margin: 0; }
-.lang-row select {
+.settings-row .setting {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.settings-row .field-label { margin: 0; }
+.settings-row select {
   width: auto;
   margin: 0;
   padding: 6px 10px;
@@ -129,10 +172,37 @@ button {
 }
 button:hover { background: var(--accent-hover); }
 button.secondary {
-  background: #f2f2f2;
-  color: #0f0f0f;
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
 }
-button.secondary:hover { background: #e6e6e6; }
+button.secondary:hover { background: var(--btn-secondary-hover); }
+#disconnect-btn:hover { background: var(--red); color: #fff; }
+button:disabled { opacity: 0.6; cursor: default; }
+button:active, a.btn-link:active { transform: translateY(1px); }
+
+/* Klavye odak göstergesi */
+button:focus-visible,
+a.btn-link:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Buton görünümlü bağlantı ("Sheet'i aç") */
+.btn-row { display: flex; gap: 10px; align-items: center; }
+a.btn-link {
+  display: inline-flex;
+  align-items: center;
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+a.btn-link:hover { background: var(--accent-hover); }
 
 /* ---- Form alanları ---- */
 select, input[type="text"] {
@@ -142,7 +212,7 @@ select, input[type="text"] {
   border-radius: 8px;
   border: 1px solid var(--border);
   font-size: 14px;
-  background: #fff;
+  background: var(--input-bg);
   color: var(--text);
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -167,3 +237,37 @@ hr { margin: 20px 0; border: 0; border-top: 1px solid var(--border); }
 }
 #toast.success { background: var(--green); }
 #toast.error { background: var(--red); }
+
+/* ---- Nasıl kullanılır ipucu ---- */
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  background: var(--hint-bg);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+}
+
+/* ---- Footer ---- */
+.app-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.app-footer a { color: var(--muted); text-decoration: none; }
+.app-footer a:hover { color: var(--accent); text-decoration: underline; }
+
+/* ---- Hareket azaltma tercihi ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+  button:active, a.btn-link:active { transform: none; }
+}

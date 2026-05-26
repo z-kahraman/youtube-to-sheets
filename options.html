@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" data-theme="auto">
 <head>
   <meta charset="utf-8">
   <title>YouTube to Sheets</title>
@@ -14,14 +14,25 @@
     </div>
   </header>
 
-  <div class="lang-row">
-    <label class="field-label" for="lang-select">Dil / Language</label>
-    <select id="lang-select">
-      <option value="tr">Türkçe</option>
-      <option value="en">English</option>
-    </select>
+  <div class="settings-row">
+    <div class="setting">
+      <label class="field-label" for="lang-select">Dil / Language</label>
+      <select id="lang-select">
+        <option value="tr">Türkçe</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+    <div class="setting">
+      <label class="field-label" for="theme-select" data-i18n="themeLabel"></label>
+      <select id="theme-select">
+        <option value="auto" data-i18n="themeAuto"></option>
+        <option value="light" data-i18n="themeLight"></option>
+        <option value="dark" data-i18n="themeDark"></option>
+      </select>
+    </div>
   </div>
 
+  <main>
   <div id="not-connected" class="card hidden">
     <p class="muted" data-i18n="notConnected"></p>
     <button id="connect-btn" data-i18n="connect"></button>
@@ -42,10 +53,15 @@
     <div id="current-sheet" class="hidden">
       <p class="muted" data-i18n="currentlySelected"></p>
       <p class="sheet-name" id="selected-sheet-name"></p>
-      <button id="change-sheet-btn" class="secondary" data-i18n="change"></button>
+      <div class="btn-row">
+        <a id="open-sheet-btn" class="btn-link" target="_blank" rel="noopener" data-i18n="openSheet"></a>
+        <button id="change-sheet-btn" class="secondary" data-i18n="change"></button>
+      </div>
+      <p class="hint" data-i18n="howToHint"></p>
     </div>
 
     <div id="sheet-picker" class="hidden">
+      <p class="muted" data-i18n="noSheetsHelp"></p>
       <label class="field-label" data-i18n="pickCreated"></label>
       <select id="sheet-list"></select>
       <button id="use-selected-btn" data-i18n="useThis"></button>
@@ -56,7 +72,15 @@
     </div>
   </div>
 
-  <div id="toast" class="hidden"></div>
+  </main>
+
+  <footer class="app-footer">
+    <span id="app-version"></span>
+    <span aria-hidden="true">·</span>
+    <a id="privacy-link" target="_blank" rel="noopener" data-i18n="footerPrivacy"></a>
+  </footer>
+
+  <div id="toast" class="hidden" role="status" aria-live="polite"></div>
 
   <script src="strings.js"></script>
   <script src="auth.js"></script>

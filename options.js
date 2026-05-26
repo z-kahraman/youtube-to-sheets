@@ -14,6 +14,36 @@ function toast(message, type = 'success') {
 }
 
 // ============================================================
+// Tema (auto / light / dark) — dil gibi storage.sync'te saklanır
+// ============================================================
+const VALID_THEMES = ['auto', 'light', 'dark'];
+
+async function loadTheme() {
+  let theme = 'auto';
+  try {
+    ({ theme } = await chrome.storage.sync.get('theme'));
+  } catch { /* storage yok → auto */ }
+  return VALID_THEMES.includes(theme) ? theme : 'auto';
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
+async function setTheme(theme) {
+  applyTheme(theme);
+  try { await chrome.storage.sync.set({ theme }); } catch {}
+}
+
+// Düğmeyi işlem boyunca kilitle; eski haline döndüren fonksiyonu verir
+function setBusy(btn, busyText) {
+  const prev = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = busyText;
+  return () => { btn.disabled = false; btn.textContent = prev; };
+}
+
+// ============================================================
 // Google API çağrıları
 // ============================================================
 async function getUserEmail(token) {
@@ -43,7 +73,7 @@ async function createSheet(token, name) {
   const sheet = await createRes.json();
 
   // 2) Header satırını seçili dile göre yaz
-  const range = `${encodeURIComponent(tabName)}!A1:I1`;
+  const range = `${encodeURIComponent(tabName)}!A1:J1`;
   await fetch(
     `https://sheets.googleapis.com/v4/spreadsheets/${sheet.spreadsheetId}` +
     `/values/${range}?valueInputOption=RAW`,
@@ -102,6 +132,11 @@ function applyI18n() {
     el.textContent = t(el.getAttribute('data-i18n'));
   });
   document.getElementById('new-sheet-name').placeholder = t('defaultSheetName');
+  // Gizlilik bağlantısı GitHub'daki dosyaya (build paketinde olmayabilir +
+  // GitHub markdown'ı düzgün render eder; ham .md yerel olarak açılmıyordu)
+  const privacyBase = 'https://github.com/z-kahraman/youtube-to-sheets/blob/main/';
+  document.getElementById('privacy-link').href =
+    privacyBase + (currentLang() === 'tr' ? 'PRIVACY.md' : 'PRIVACY.en.md');
 }
 
 async function refreshUI() {
@@ -133,6 +168,8 @@ async function refreshUI() {
     show('current-sheet');
     hide('sheet-picker');
     document.getElementById('selected-sheet-name').textContent = selected.name;
+    document.getElementById('open-sheet-btn').href =
+      `https://docs.google.com/spreadsheets/d/${selected.id}/edit`;
   } else {
     hide('current-sheet');
     show('sheet-picker');
@@ -168,13 +205,20 @@ document.getElementById('lang-select').addEventListener('change', async (e) => {
   await refreshUI();
 });
 
-document.getElementById('connect-btn').addEventListener('click', async () => {
+document.getElementById('theme-select').addEventListener('change', (e) => {
+  setTheme(e.target.value);
+});
+
+document.getElementById('connect-btn').addEventListener('click', async (e) => {
+  const restore = setBusy(e.currentTarget, t('connecting'));
   try {
     await getToken(true);
     toast(t('connected'));
     await refreshUI();
-  } catch (e) {
-    toast(t('connectError') + e.message, 'error');
+  } catch (err) {
+    toast(t('connectError') + err.message, 'error');
+  } finally {
+    restore();
   }
 });
 
@@ -206,18 +250,20 @@ document.getElementById('change-sheet-btn').addEventListener('click', async () =
   await refreshUI();
 });
 
-document.getElementById('create-sheet-btn').addEventListener('click', async () => {
+document.getElementById('create-sheet-btn').addEventListener('click', async (e) => {
   const name = document.getElementById('new-sheet-name').value.trim() || t('defaultSheetName');
+  const restore = setBusy(e.currentTarget, t('creatingSheet'));
   try {
-    toast(t('creatingSheet'));
     const token = await getToken(true);
     const sheet = await createSheet(token, name);
     await addCreatedSheet(sheet.id, sheet.name);
     await setSelectedSheet(sheet.id, sheet.name);
     toast(t('sheetCreated'));
     await refreshUI();
-  } catch (e) {
-    toast(t('createError') + e.message, 'error');
+  } catch (err) {
+    toast(t('createError') + err.message, 'error');
+  } finally {
+    restore();
   }
 });
 
@@ -226,7 +272,11 @@ document.getElementById('create-sheet-btn').addEventListener('click', async () =
 // ============================================================
 async function init() {
   await loadLang();
+  const theme = await loadTheme();
+  applyTheme(theme);
+  document.getElementById('theme-select').value = theme;
   document.getElementById('lang-select').value = currentLang();
+  document.getElementById('app-version').textContent = 'v' + chrome.runtime.getManifest().version;
   applyI18n();
   await refreshUI();
 }
