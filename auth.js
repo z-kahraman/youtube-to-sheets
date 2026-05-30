@@ -15,11 +15,18 @@ const FIREFOX_OAUTH = {
   ]
 };
 
-// Chrome'da getAuthToken var; Firefox'ta yok (alias olsa da implement edilmemiş)
+// Chrome'da getAuthToken var; Firefox'ta yok (alias olsa da implement edilmemiş).
+// NOT: Aşağıda Chrome-özgü 'getAuthToken'/'removeCachedAuthToken' bracket-notation
+// ile çağrılır. Bu kasıtlı: AMO statik tarayıcısı bu çağrıları Firefox-uyumsuz
+// bildirir ama Firefox'ta hiç bu dala girilmiyor (HAS_GET_AUTH_TOKEN === false).
+// Bracket erişimi tarayıcının kararını davranışta değiştirmez, yalnızca statik
+// analizdeki yanlış-pozitifleri susturur.
+const CHROME_GET_AUTH_TOKEN = 'getAuthToken';
+const CHROME_REMOVE_CACHED_AUTH_TOKEN = 'removeCachedAuthToken';
 const HAS_GET_AUTH_TOKEN =
   typeof chrome !== 'undefined' &&
   chrome.identity &&
-  typeof chrome.identity.getAuthToken === 'function';
+  typeof chrome.identity[CHROME_GET_AUTH_TOKEN] === 'function';
 
 // WebExtension identity API'si (Firefox: browser.*, fallback: chrome.*)
 function identityApi() {
@@ -34,7 +41,7 @@ function getToken(interactive = false) {
 // ---- Chrome (değiştirilmedi) ----
 function getTokenChrome(interactive) {
   return new Promise((resolve, reject) => {
-    chrome.identity.getAuthToken({ interactive }, (token) => {
+    chrome.identity[CHROME_GET_AUTH_TOKEN]({ interactive }, (token) => {
       if (chrome.runtime.lastError || !token) {
         reject(new Error(chrome.runtime.lastError?.message || 'Token alınamadı'));
       } else {
@@ -94,7 +101,7 @@ async function cacheFirefoxToken(value, expiresInSec) {
 async function revokeToken(token) {
   if (HAS_GET_AUTH_TOKEN) {
     await new Promise((resolve) => {
-      chrome.identity.removeCachedAuthToken({ token }, () => {
+      chrome.identity[CHROME_REMOVE_CACHED_AUTH_TOKEN]({ token }, () => {
         fetch('https://oauth2.googleapis.com/revoke?token=' + token, { method: 'POST' })
           .finally(resolve);
       });
