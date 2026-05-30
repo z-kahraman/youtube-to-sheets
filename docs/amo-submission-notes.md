@@ -60,94 +60,68 @@ Ne işe yarıyor
 
 ## Notes to reviewer (private)
 
-> Single block, English. Reviewers read English; one block keeps the trail clean.
+> AMO limits this field to **3000 characters**. The block below is ~2700 chars,
+> leaving room for small additions. Single English block — reviewers read English.
 
 ```
-Thanks for reviewing. This is an open-source MV3 extension that saves YouTube
-videos to the user's own Google Sheet.
+Open-source MV3 extension that saves YouTube videos to the user's own Google Sheet.
 
-SOURCE CODE
-- https://github.com/z-kahraman/youtube-to-sheets
-- The submitted zip is built by ./build.sh and contains the unminified source
-  exactly as it appears in the repo (vanilla JS, no framework, no bundler, no
-  build step — build.sh only copies files and zips them).
-- The repo also ships a yt2sheets-firefox-dev.zip variant whose only difference
-  is strict_min_version=115 (for local about:debugging install on older Firefox
-  builds); the AMO-submitted zip uses strict_min_version=140 / Android 142 so
-  data_collection_permissions is enforced.
+SOURCE
+https://github.com/z-kahraman/youtube-to-sheets
+Built by ./build.sh — vanilla JS, no framework / bundler / build step; the zip
+contains the unminified source as-is. The repo also produces *-firefox-dev.zip
+whose only difference is strict_min_version=115 (for local about:debugging on
+older Firefox); the AMO zip uses Fx 140 / Android 142 so
+data_collection_permissions is enforced.
 
 SINGLE PURPOSE
-Save the YouTube video the user is currently watching — its public metadata
-(title, channel, URL, watched/total time) plus the user's own note, tags, and a
-status field — as a row in a Google Sheet that the user owns.
+Save the YouTube video the user is watching — public metadata (title, channel,
+URL, watched/total time) + the user's note, tags, and a status — as a row in a
+Google Sheet the user owns.
 
-OAUTH SCOPES
-- drive.file        — the extension can only touch Sheets it created. It cannot
-                      list, read, or modify any other file in the user's Drive.
-- userinfo.email    — displays the connected account's email on the options page
-                      so the user can confirm "which Google account is connected".
-No restricted scopes; no CASA assessment required.
+OAUTH (no restricted scopes; no CASA required)
+- drive.file      Touches only Sheets the extension itself created.
+- userinfo.email  Shows the connected email on the options page.
 
-PERMISSION RATIONALES
-- storage         storage.sync keys: selectedSheet, createdSheets, lang, theme.
-- identity        Firefox uses browser.identity.launchWebAuthFlow (Web OAuth
-                  implicit flow). The chrome.identity.getAuthToken /
-                  removeCachedAuthToken references in auth.js are gated behind
-                  a runtime feature check (HAS_GET_AUTH_TOKEN) and only execute
-                  on Chrome; they're written via bracket notation
-                  (chrome.identity['getAuthToken']) so AMO's static analyzer no
-                  longer flags them as Firefox-incompatible.
-- contextMenus    Right-click "Save to Sheet" menu, restricted via
-                  documentUrlPatterns to https://www.youtube.com/watch* only.
-- host sheets.googleapis.com   write/read rows in the user's sheet.
-- host www.googleapis.com      drive.file endpoint + userinfo.email.
-- host oauth2.googleapis.com   token revocation on disconnect.
-- content script (youtube.com/watch)   reads visible page metadata (title,
-                                       channel, timestamps) and renders the
-                                       note card inside a closed Shadow DOM
-                                       so YouTube's CSS / scripts cannot
-                                       reach it.
+PERMISSIONS
+- storage      storage.sync: selectedSheet, createdSheets, lang, theme.
+- identity     Firefox: browser.identity.launchWebAuthFlow (implicit flow).
+               chrome.identity.getAuthToken / removeCachedAuthToken are gated by
+               HAS_GET_AUTH_TOKEN (Chrome-only) and written via bracket notation
+               so AMO's static analyzer no longer flags them.
+- contextMenus "Save to Sheet" right-click, documentUrlPatterns-restricted to
+               https://www.youtube.com/watch* only.
+- hosts        sheets.googleapis.com, www.googleapis.com, oauth2.googleapis.com
+               (Sheets API + userinfo + token revoke).
+- content script (youtube.com/watch) reads visible page metadata and renders
+               the note card inside a closed Shadow DOM.
 
-DATA FLOW & PRIVACY
-- All data goes browser → Google APIs directly. No third-party servers, no
-  analytics, no telemetry, no ads.
-- data_collection_permissions declares: personallyIdentifyingInfo (user email,
-  shown on options page) and websiteContent (the YouTube page metadata the user
-  asks to be written into their own sheet).
-- Notes/tags typed by the user are user-generated content sent only to the
-  user's own sheet at the user's explicit save action.
-- No content is shared across users.
+DATA FLOW
+Browser → Google APIs directly. No third-party servers, analytics, telemetry,
+or ads. data_collection_permissions: personallyIdentifyingInfo (user email on
+options page) + websiteContent (YouTube page metadata the user writes into
+their own sheet). Notes/tags are user-typed and sent only to the user's own
+sheet at the explicit save action. No cross-user sharing.
 
-HOW TO TEST
-You will need a Google account (any).
-1. Install the zip via about:debugging → Load Temporary Add-on. The options page
-   opens in a new tab.
-2. Click "Connect with Google" and complete the OAuth flow. Scope screen will
-   show drive.file + userinfo.email only.
-3. Click "Create new sheet". A spreadsheet is created in the tester's Drive.
-4. Open any YouTube video (https://www.youtube.com/watch?v=...). Either:
-     - accept the on-open "Save this video?" prompt, OR
-     - right-click → "Save to Sheet".
-   The note card opens. Type a note + a tag, press "Save".
-5. Open the sheet (button on the options page). A new row appears with the video
-   metadata, your note, and the auto-derived status.
+HOW TO TEST (any Google account)
+1. about:debugging → Load Temporary Add-on → install the zip. Options page opens.
+2. "Connect with Google" → OAuth screen shows only drive.file + userinfo.email.
+3. "Create new sheet" → a spreadsheet appears in the tester's Drive.
+4. Open any https://www.youtube.com/watch?v=... Then either accept the on-open
+   "Save this video?" prompt, or right-click → "Save to Sheet". Type a note +
+   tag in the card, press Save.
+5. "Open sheet" → a new row contains the video metadata, your note, status.
 6. Save the same video again with a different note → the existing row updates
-   (note appended, tags merged) instead of creating a duplicate row.
-
-NETWORK ENDPOINTS CONTACTED
-- accounts.google.com           OAuth authorize
-- oauth2.googleapis.com         OAuth revoke
-- www.googleapis.com            userinfo.email
-- sheets.googleapis.com         spreadsheet create/append/get/update
-
-Happy to clarify anything — contact via the email on the listing.
+   (note appended, tags merged) instead of duplicating.
 ```
 
 ---
 
-## Türkçe — incelemecilere not (özel)
+## Türkçe — incelemecilere not (özel) — yerel arşiv
 
-> AMO incelemecileri İngilizce okur; bu blok yerel arşiv için.
+> AMO incelemecileri İngilizce okur; bu blok yalnız Türkçe arşiv. Aşağıdaki Türkçe
+> blok 3000 karakter sınırına SIKIŞTIRILMADI — AMO'ya yapıştırılacaksa kısaltılması
+> gerekir. Sınır için yukarıdaki İngilizce blok kullanılmalı.
 
 ```
 İnceleme için teşekkürler. Bu, kullanıcının izlediği YouTube videosunu kendi
