@@ -79,7 +79,9 @@ your own Google Sheet. Triggered by right-click → "Save to Sheet" on a watch p
   Status (Watched / Partially watched / Opened) is auto-derived from watch progress and
   editable in the card. Sheets created before this column only differ by a missing J header.
 - The context menu appears only on `youtube.com/watch` pages.
-- Firefox `strict_min_version` is 115. `data_collection_permissions` (Firefox 140+) is
-  declared as `personalIdentifyingInfo` (user email via `userinfo.email`) and
-  `websiteContent` (YouTube page title/URL/timestamps written to the sheet). Older
-  Firefox releases ignore the field, so it's safe to ship.
+- Firefox minimums match the version that introduced `data_collection_permissions`:
+  desktop `gecko.strict_min_version: 140.0` (Fx 140, June 2025) and
+  `gecko_android.strict_min_version: 142.0` (Android 142). ESR 115/128 are EOL, so no
+  supported users are dropped. The declared categories are `personallyIdentifyingInfo`
+  (user email via `userinfo.email`) and `websiteContent` (YouTube page title/URL/
+  timestamps written to the sheet).
