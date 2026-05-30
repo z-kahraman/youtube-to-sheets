@@ -29,7 +29,10 @@ analitik veya reklam **yok**. Uzantı yalnızca kendi oluşturduğu Sheets dosya
 
 ## Kurulum (lokal / geliştirici modu)
 
-Paketleri üret: `./build.sh` → `dist/yt2sheets-chrome.zip`, `dist/yt2sheets-firefox.zip`
+Paketleri üret: `./build.sh` →
+- `dist/yt2sheets-chrome.zip` — Chrome
+- `dist/yt2sheets-firefox.zip` — AMO yüklemesi için (Fx 140+ / Android 142+, tüm uyarılar temiz)
+- `dist/yt2sheets-firefox-dev.zip` — lokal `about:debugging` yüklemesi için (Fx 115+)
 
 ### Chrome / Chromium
 1. `chrome://extensions` → "Geliştirici modu" aç
@@ -38,7 +41,9 @@ Paketleri üret: `./build.sh` → `dist/yt2sheets-chrome.zip`, `dist/yt2sheets-f
 
 ### Firefox
 1. `about:debugging` → "This Firefox" → "Load Temporary Add-on"
-2. `dist/yt2sheets-firefox.zip` dosyasını seç
+2. **`dist/yt2sheets-firefox-dev.zip`** dosyasını seç (lokal yükleme; eski Firefox'larda
+   da açılır). `yt2sheets-firefox.zip` AMO yüklemesi içindir — `strict_min_version: 140`
+   olduğu için eski Firefox temp install'ı reddeder.
 3. Auth için ayrı bir Google **Web** OAuth client gerekir — bkz. `docs/firefox-setup.md`
 
 ## Geliştiriciler için: kendi Google OAuth client'ını kur

@@ -28,7 +28,10 @@ servers, analytics, or ads. The extension only accesses Sheets it created (`driv
 
 ## Install (local / developer mode)
 
-Build the packages: `./build.sh` → `dist/yt2sheets-chrome.zip`, `dist/yt2sheets-firefox.zip`
+Build the packages: `./build.sh` →
+- `dist/yt2sheets-chrome.zip` — Chrome
+- `dist/yt2sheets-firefox.zip` — for AMO upload (Fx 140+ / Android 142+, all warnings clean)
+- `dist/yt2sheets-firefox-dev.zip` — for local `about:debugging` install (Fx 115+)
 
 ### Chrome / Chromium
 1. `chrome://extensions` → enable "Developer mode"
@@ -37,7 +40,9 @@ Build the packages: `./build.sh` → `dist/yt2sheets-chrome.zip`, `dist/yt2sheet
 
 ### Firefox
 1. `about:debugging` → "This Firefox" → "Load Temporary Add-on"
-2. Select `dist/yt2sheets-firefox.zip`
+2. Select **`dist/yt2sheets-firefox-dev.zip`** (local install; works on older Firefox
+   builds too). The plain `yt2sheets-firefox.zip` is for AMO — its
+   `strict_min_version: 140` rejects temp installs on older Firefox.
 3. Auth needs a separate Google **Web** OAuth client — see `docs/firefox-setup.md`
 
 ## For contributors: set up your own Google OAuth client

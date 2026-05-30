@@ -49,7 +49,8 @@ your own Google Sheet. Triggered by right-click → "Save to Sheet" on a watch p
 - `content.js` — YouTube scrape + on-open prompt + note card (Shadow DOM) + tag chips + status
 - `options.html` / `options.css` / `options.js` — setup page: connect, create/select/open sheet, language, theme
 - `icons/` — `icon.svg` source + PNGs
-- `build.sh` — builds the per-browser zips
+- `build.sh` — builds three zips: `chrome`, `firefox` (AMO-ready, Fx 140 / Android 142),
+  and `firefox-dev` (patched to `strict_min_version: 115` for local `about:debugging`)
 - `README.md` / `README.tr.md`, `LICENSE` (MIT), `PRIVACY.md` / `PRIVACY.en.md`
 - `docs/` — Firefox setup, publishing, and store-listing guides
 
@@ -62,8 +63,11 @@ your own Google Sheet. Triggered by right-click → "Save to Sheet" on a watch p
 
 ## Dev / build
 - Load unpacked — Chrome: `chrome://extensions` → Developer mode → Load unpacked (this folder).
-  Firefox: `about:debugging` → Load Temporary Add-on → `dist/yt2sheets-firefox.zip`.
-- `./build.sh` → `dist/yt2sheets-chrome.zip`, `dist/yt2sheets-firefox.zip`.
+  Firefox: `about:debugging` → Load Temporary Add-on → `dist/yt2sheets-firefox-dev.zip`
+  (the `*-dev` zip drops `strict_min_version` to 115 so older local Firefox installs
+  accept it; the regular `*-firefox.zip` is reserved for AMO upload).
+- `./build.sh` → `dist/yt2sheets-chrome.zip`, `yt2sheets-firefox.zip` (AMO),
+  `yt2sheets-firefox-dev.zip` (local).
 - Each contributor needs their own Google OAuth client(s) — see README and `docs/firefox-setup.md`.
 - After loading/reloading the extension, reload the YouTube tab (the content script re-injects).
 
@@ -79,9 +83,11 @@ your own Google Sheet. Triggered by right-click → "Save to Sheet" on a watch p
   Status (Watched / Partially watched / Opened) is auto-derived from watch progress and
   editable in the card. Sheets created before this column only differ by a missing J header.
 - The context menu appears only on `youtube.com/watch` pages.
-- Firefox `gecko.strict_min_version` is `115.0` for broad compatibility, even though
-  `data_collection_permissions` first landed in Fx 140 (desktop) / Fx Android 142.
-  Older Firefox releases silently ignore the field. AMO surfaces two non-blocking
-  *warnings* about this mismatch — they do **not** block submission. The declared
-  categories are `personallyIdentifyingInfo` (user email via `userinfo.email`) and
+- The AMO-uploaded `manifest.firefox.json` declares `gecko.strict_min_version: 140.0`
+  and `gecko_android.strict_min_version: 142.0` to match the Firefox versions that
+  introduced `data_collection_permissions` (clears all AMO warnings). For local
+  development on older Firefox builds, `build.sh` emits a second
+  `yt2sheets-firefox-dev.zip` with `strict_min_version` rewritten to `115.0` and
+  `gecko_android` stripped — load that one via `about:debugging`. Declared data
+  categories: `personallyIdentifyingInfo` (user email via `userinfo.email`) and
   `websiteContent` (YouTube page title/URL/timestamps written to the sheet).
