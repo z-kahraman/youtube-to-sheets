@@ -1,6 +1,6 @@
 {
   "name": "youtube-to-sheets",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "description": "YouTube videolarını notlarla Google Sheets'e kaydeden tarayıcı eklentisi",
   "scripts": {

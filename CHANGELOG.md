@@ -5,9 +5,18 @@ Format: [Keep a Changelog](https://keepachangelog.com/) · Versioning: [SemVer](
 
 ## [Unreleased]
 
+## [0.5.1] — 2026-09-20
+
 ### Added
 - Feedback link (→ GitHub issues) in the options-page footer.
 - Docs: AMO Technical Details copy, Chrome Web Store listing copy, launch-post drafts.
+
+### Fixed
+- **Firefox re-login loop:** implicit-flow tokens expire hourly with no refresh token;
+  silent renewal now sends `login_hint` (fixes failures when multiple Google accounts
+  are signed in), and saving falls back to an interactive prompt automatically instead
+  of surfacing an error. `getToken()` calls are also queued so overlapping requests from
+  multiple YouTube tabs don't launch concurrent Firefox auth flows.
 
 ## [0.5.0] — 2026-08-09
 
