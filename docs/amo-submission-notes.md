@@ -12,6 +12,93 @@ review context. The privacy policy is in `PRIVACY.en.md` / `PRIVACY.md`.
 
 ---
 
+## Release notes — v0.5.1
+
+### English (default locale)
+
+```
+Bug fix release.
+
+Fixed
+- Firefox: you no longer get bounced back to sign-in every hour. Session
+  refresh now works reliably when you have more than one Google account
+  signed in to the browser, and if a silent refresh still fails, saving a
+  video now prompts you to reconnect automatically instead of failing with
+  an error.
+- Fixed a glitch where having several YouTube tabs open at once could make
+  the sign-in refresh fail for one of them.
+
+Added
+- Feedback link (→ GitHub issues) in the settings page footer.
+```
+
+### Türkçe
+
+```
+Hata düzeltme sürümü.
+
+Düzeltmeler
+- Firefox: artık her saat başı tekrar giriş yapmaya zorlanmıyorsun. Birden
+  fazla Google hesabı açıkken oturum yenileme artık güvenilir çalışıyor;
+  sessiz yenileme başarısız olursa video kaydederken otomatik olarak
+  yeniden bağlanma istemi açılıyor (hata vermek yerine).
+- Aynı anda birden fazla YouTube sekmesi açıkken oturum yenilemenin
+  bazılarında başarısız olabildiği bir hata düzeltildi.
+
+Yeni
+- Ayarlar sayfası altbilgisine "Geri bildirim" linki (→ GitHub issues).
+```
+
+---
+
+## Notes to reviewer — v0.5.1
+
+```
+0.5.1 on top of 0.5.0. No manifest/permission changes: same permissions,
+host_permissions, and OAuth scopes (drive.file + userinfo.email) as 0.5.0.
+
+CHANGES
+
+1) Firefox token-refresh reliability (auth.js, background.js)
+   Firefox uses launchWebAuthFlow (implicit flow); tokens expire hourly
+   with no refresh token. Silent renewal (prompt=none) now sends
+   login_hint using the connected account's email (fetched once from
+   googleapis.com/oauth2/v2/userinfo, cached in storage.local as
+   ff_email) — fixes silent-renewal failures when the browser has
+   multiple Google accounts signed in. If silent renewal still fails,
+   saving a video now falls back to an interactive
+   browser.identity.launchWebAuthFlow prompt automatically instead of
+   surfacing a bare error that required a manual reconnect from the
+   options page.
+
+2) getToken() calls are now queued (auth.js) so overlapping requests
+   from multiple open YouTube tabs can't launch concurrent
+   launchWebAuthFlow calls — Firefox only supports one in-flight auth
+   flow at a time; a second concurrent call could fail outright.
+
+3) UI-only: added a "Feedback" link (options page footer) to the
+   project's GitHub issues page. No new permissions or data access.
+
+HOW TO TEST
+1. Connect the add-on, then expire the cached token without waiting an
+   hour: about:debugging → this add-on → Inspect → console:
+   browser.storage.local.set({ff_token:{value:'x',expiry:Date.now()-1000}})
+   — then save a video. It should refresh silently or prompt you to
+   reconnect, instead of failing outright.
+2. Sign in to a second Google account in the browser alongside the
+   connected one, expire the token as above, and save — renewal should
+   still succeed without a popup.
+3. Open 2+ YouTube tabs, expire the token, and trigger a save/lookup in
+   each close together — no rejected launchWebAuthFlow errors in the
+   console.
+
+SOURCE shape unchanged: ./build.sh, vanilla JS, no minify/bundle/build
+step. ESLint config + package.json are dev-only and not in the zip.
+github.com/z-kahraman/youtube-to-sheets
+```
+
+---
+
 ## Release notes — v0.5.0
 
 ### English (default locale)
