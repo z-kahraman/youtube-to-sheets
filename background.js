@@ -191,6 +191,10 @@ async function handleSaveRow(data) {
   await loadLang();
   const selected = await getSelectedSheet();
   if (!selected) throw new Error(t('noSheet'));
+  // Token düşmüş ve sessiz yenileme başarısızsa (Firefox implicit flow ~1 saat)
+  // kullanıcı kaydı kendisi başlattığı için interactive izin penceresi açılabilir.
+  // Başarılı olursa token cache'lenir; aşağıdaki apiFetch'ler sessizce devam eder.
+  try { await getToken(false); } catch { await getToken(true); }
   try {
     await saveRowTo(selected.id, await getSheetTitle(selected.id), data);
   } catch (e) {

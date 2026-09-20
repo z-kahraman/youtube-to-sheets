@@ -34,8 +34,18 @@ function identityApi() {
 }
 
 // ---- Ortak giriş noktası ----
+// Çağrılar bir kuyrukta sıraya konur: aynı anda birden fazla YouTube sekmesi
+// (her biri kendi lookupRow/saveRow isteğini atınca) token'ı süresi dolmuş
+// bulursa hepsi paralel launchWebAuthFlow açmaya çalışmasın — Firefox aynı anda
+// tek bir auth flow'u destekliyor, ikincisi çakışıp hataya düşebiliyor. Sıraya
+// koymak ilk çağrının token'ı tazeleyip cache'lemesini sağlar; sıradakiler cache'e
+// çarpıp anında döner.
+let tokenQueue = Promise.resolve();
 function getToken(interactive = false) {
-  return HAS_GET_AUTH_TOKEN ? getTokenChrome(interactive) : getTokenFirefox(interactive);
+  const run = () => (HAS_GET_AUTH_TOKEN ? getTokenChrome(interactive) : getTokenFirefox(interactive));
+  const result = tokenQueue.then(run, run);
+  tokenQueue = result.catch(() => {}); // bir çağrının hatası kuyruğu tıkamasın
+  return result;
 }
 
 // ---- Chrome (değiştirilmedi) ----
@@ -52,13 +62,16 @@ function getTokenChrome(interactive) {
 }
 
 // Firefox auth URL'i (silent / interactive)
-function buildFirefoxAuthUrl(redirectUri, { silent = false } = {}) {
+// loginHint: birden fazla Google hesabı açıkken prompt=none'ın hangi hesabı
+// yenileyeceğini belirtir; verilmezse Google 'interaction_required' dönebilir.
+function buildFirefoxAuthUrl(redirectUri, { silent = false, loginHint = '' } = {}) {
   return 'https://accounts.google.com/o/oauth2/v2/auth' +
     '?client_id=' + encodeURIComponent(FIREFOX_OAUTH.clientId) +
     '&response_type=token' +
     '&redirect_uri=' + encodeURIComponent(redirectUri) +
     '&scope=' + encodeURIComponent(FIREFOX_OAUTH.scopes.join(' ')) +
-    (silent ? '&prompt=none' : '');
+    (silent ? '&prompt=none' : '') +
+    (loginHint ? '&login_hint=' + encodeURIComponent(loginHint) : '');
 }
 
 // ---- Firefox: launchWebAuthFlow (implicit flow) ----
@@ -85,7 +98,21 @@ async function getTokenFirefox(interactive) {
   if (!parsed.access_token) throw new Error('Token alınamadı (Firefox)');
 
   await cacheFirefoxToken(parsed.access_token, parseInt(parsed.expires_in || '3600', 10));
+  rememberFirefoxEmail(parsed.access_token); // await'siz: e-posta sonraki sessiz yenilemeler için
   return parsed.access_token;
+}
+
+// Bağlanan hesabın e-postasını sakla → sessiz yenilemede login_hint olarak kullanılır.
+// Başarısızlık kritik değil (login_hint'siz akış eskisi gibi çalışır).
+async function rememberFirefoxEmail(token) {
+  try {
+    const res = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) return;
+    const { email } = await res.json();
+    if (email) await chrome.storage.local.set({ ff_email: email });
+  } catch { /* yoksay */ }
 }
 
 // Sessiz token yenileme: launchWebAuthFlow({interactive:false}) + prompt=none.
@@ -94,7 +121,8 @@ async function getTokenFirefox(interactive) {
 async function trySilentRefreshFirefox() {
   try {
     const redirectUri = identityApi().getRedirectURL();
-    const authUrl = buildFirefoxAuthUrl(redirectUri, { silent: true });
+    const { ff_email } = await chrome.storage.local.get('ff_email');
+    const authUrl = buildFirefoxAuthUrl(redirectUri, { silent: true, loginHint: ff_email || '' });
     const redirect = await identityApi().launchWebAuthFlow({ interactive: false, url: authUrl });
     const parsed = parseFragment(redirect);
     if (!parsed.access_token) return null;
@@ -193,7 +221,7 @@ async function revokeToken(token) {
       });
     });
   } else {
-    await chrome.storage.local.remove('ff_token');
+    await chrome.storage.local.remove(['ff_token', 'ff_email']);
     try {
       await fetch('https://oauth2.googleapis.com/revoke?token=' + token, { method: 'POST' });
     } catch { /* yoksay */ }

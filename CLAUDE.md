@@ -18,7 +18,8 @@ video page and the options page elsewhere).
   - Firefox: `browser.identity.launchWebAuthFlow` (implicit flow, separate Web OAuth client)
 - `chrome.storage.sync`: `selectedSheet`, `createdSheets` (capped at 50 — 8KB/item quota),
   `lang`, `theme`, `showPrompt`
-- `chrome.storage.local`: `ff_token` (Firefox token cache), `sheetTitleCache`
+- `chrome.storage.local`: `ff_token` (Firefox token cache), `ff_email` (connected
+  account's email — `login_hint` for Firefox silent refresh), `sheetTitleCache`
   (spreadsheetId → first tab title; refreshed on 400)
 
 ## Architecture
@@ -59,7 +60,9 @@ video page and the options page elsewhere).
   fail and is preferred for the title on shorts.
 - **Auth robustness.** All Sheets/Drive calls go through `apiFetch` in `background.js`:
   on 401 the cached token is invalidated (`invalidateToken` in `auth.js`) and the request
-  is retried once with a fresh token.
+  is retried once with a fresh token. `getToken()` calls are serialized through a queue
+  (`auth.js`) so overlapping requests from multiple YouTube tabs don't launch concurrent
+  Firefox `launchWebAuthFlow` calls, which only supports one in-flight flow at a time.
 - **Status column.** Watched > Partially watched > Opened. On auto-derived saves the
   status never downgrades an existing row (old cell text is recognized in both languages);
   a manually chosen status in the card (`statusManual`) always wins.
